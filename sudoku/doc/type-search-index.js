@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"Alle Klassen und Schnittstellen","u":"allclasses-index.html"},{"p":"de.bt.bw.sudoku","l":"FalscheZahl"},{"p":"de.bt.bw.sudoku","l":"Spielfeld"},{"p":"de.bt.bw.sudoku","l":"SpielfeldImpl"}];updateSearchResults();
