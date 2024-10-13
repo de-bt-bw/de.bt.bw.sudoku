@@ -15,39 +15,37 @@ import java.util.Scanner;
 public class SpielfeldLeserImpl implements SpielfeldLeser {
 
 	@Override
-	public Spielfeld lies(String name)
+	public Spielfeld lies(String dateiName)
 			throws FileNotFoundException, NumberFormatException, FalscheZeilenanzahl, FalscheZeilenlaenge, FalscheZahl {
-		Scanner scanner = new Scanner(new File(name));
+		Scanner scanner = new Scanner(new File(dateiName));
 		Spielfeld spielfeld = new SpielfeldImpl();
-		int zeilenIndex = 0;
-		while (scanner.hasNextLine()) {
-			String zeile = scanner.nextLine();
-			if (!zeile.trim().isEmpty()) { // Leerzeilen überspringen
-				zeilenIndex++;
-				if (zeilenIndex > 9) {
-					scanner.close();
-					throw new FalscheZeilenanzahl(zeilenIndex);
-				}					
-				String[] zahlen = zeile.split("\\s+"); // Zahlen durch nichtleere Folgen von Leerzeichen getrennt
-				int zeilenLaenge = zahlen.length;
-				if (zeilenLaenge != 9) {
-					scanner.close();
-					throw new FalscheZeilenlaenge(zeilenIndex, zeilenLaenge);
-				}					
-				for (int spaltenindex = 1; spaltenindex <= 9; spaltenindex++) {
-					int wert = Integer.parseInt(zahlen[spaltenindex-1]); // Achtung: Arrayindizes beginnen bei 0
-					if (0 <= wert && wert <= 9) 
-						spielfeld.setze(zeilenIndex, spaltenindex, wert);
-					else {
-						scanner.close();
-						throw new FalscheZahl(wert, 0, 9);
+		int zeilenNr = 0;
+		try {	
+			while (scanner.hasNextLine()) {
+				String zeile = scanner.nextLine();
+				if (!zeile.trim().isEmpty()) { // Leerzeilen überspringen
+					zeilenNr++;
+					if (zeilenNr > 9) 
+						throw new FalscheZeilenanzahl(zeilenNr);					
+					String[] zahlen = zeile.split("\\s+"); // Zahlen durch nichtleere Folgen von Leerzeichen getrennt
+					int zeilenLaenge = zahlen.length;
+					if (zeilenLaenge != 9) 
+						throw new FalscheZeilenlaenge(zeilenNr, zeilenLaenge);
+					for (int spaltenNr = 1; spaltenNr <= 9; spaltenNr++) {
+						int wert = Integer.parseInt(zahlen[spaltenNr-1]); // Achtung: Arrayindizes beginnen bei 0
+						if (0 <= wert && wert <= 9) 
+							spielfeld.setze(zeilenNr, spaltenNr, wert);
+						else
+							throw new FalscheZahl(wert, 0, 9);
 					}						
 				}	
-			}			
+			}
+			if (zeilenNr < 9)
+				throw new FalscheZeilenanzahl(zeilenNr);
 		}
-		scanner.close();
-		if (zeilenIndex < 9)
-			throw new FalscheZeilenanzahl(zeilenIndex);		
+		finally {
+			scanner.close();
+		}				
 		return spielfeld;
 	}
 
