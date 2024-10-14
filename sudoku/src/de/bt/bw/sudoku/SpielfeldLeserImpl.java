@@ -16,7 +16,8 @@ public class SpielfeldLeserImpl implements SpielfeldLeser {
 
 	@Override
 	public Spielfeld lies(String dateiName)
-			throws FileNotFoundException, NumberFormatException, FalscheZeilenanzahl, FalscheZeilenlaenge, FalscheZahl {
+			throws FileNotFoundException, NumberFormatException, 
+			FalscheZeilenanzahl, FalscheZeilenlaenge, FalscheZahl, FalscherZustand, FalscherWert {
 		Scanner scanner = new Scanner(new File(dateiName));
 		Spielfeld spielfeld = new SpielfeldImpl();
 		int zeilenNr = 0;
@@ -24,24 +25,23 @@ public class SpielfeldLeserImpl implements SpielfeldLeser {
 			while (scanner.hasNextLine()) {
 				String zeile = scanner.nextLine();
 				if (!zeile.trim().isEmpty()) { // Leerzeilen überspringen
-					zeilenNr++;
-					if (zeilenNr > 9) 
-						throw new FalscheZeilenanzahl(zeilenNr);					
+					if (zeilenNr > 8) 
+						throw new FalscheZeilenanzahl(zeilenNr + 1); // +1, weil Zeilennummern bei 0 beginnen					
 					String[] zahlen = zeile.split("\\s+"); // Zahlen durch nichtleere Folgen von Leerzeichen getrennt
 					int zeilenLaenge = zahlen.length;
 					if (zeilenLaenge != 9) 
 						throw new FalscheZeilenlaenge(zeilenNr, zeilenLaenge);
-					for (int spaltenNr = 1; spaltenNr <= 9; spaltenNr++) {
-						int wert = Integer.parseInt(zahlen[spaltenNr-1]); // Achtung: Arrayindizes beginnen bei 0
-						if (0 <= wert && wert <= 9) 
+					for (int spaltenNr = 0; spaltenNr <= 8; spaltenNr++) {
+						int wert = Integer.parseInt(zahlen[spaltenNr]); 
+						if (wert != 0) 
+							// Kein Setzen, falls Wert = 0
 							spielfeld.setze(zeilenNr, spaltenNr, wert);
-						else
-							throw new FalscheZahl(wert, 0, 9);
 					}						
-				}	
+				}
+				zeilenNr++;
 			}
-			if (zeilenNr < 9)
-				throw new FalscheZeilenanzahl(zeilenNr);
+			if (zeilenNr < 8)
+				throw new FalscheZeilenanzahl(zeilenNr + 1); // +1, weil Zeilennummern bei 0 beginnen
 		}
 		finally {
 			scanner.close();
