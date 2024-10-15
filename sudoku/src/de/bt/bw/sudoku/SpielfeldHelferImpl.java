@@ -33,17 +33,17 @@ public class SpielfeldHelferImpl implements SpielfeldHelfer {
 	@Override
 	public Spielfeld erzeugeSpielfeld(int[][] spielfeldArray)
 			throws FalscheZahl, FalscherWert, FalscheZeilenanzahl, FalscheZeilenlaenge {
-		if (spielfeldArray == null)
-			return null;
+		// Array-Dimensionen überprüfen
+		if (spielfeldArray.length != 9)
+			throw new FalscheZeilenanzahl(spielfeldArray.length);
+		int zeilenNr, spaltenNr;
+		for (zeilenNr = 0; zeilenNr < 9; zeilenNr++)
+			if (spielfeldArray[zeilenNr].length != 9)
+				throw new FalscheZeilenlaenge(zeilenNr, spielfeldArray[zeilenNr].length);
+		// Spielfeld erzeugen und Werte setzen
 		Spielfeld spielfeld = new SpielfeldImpl();
-		int zeilenanzahl = spielfeldArray.length, zeilenlaenge;
-		if (zeilenanzahl != 9)
-			throw new FalscheZeilenanzahl(zeilenanzahl);
-		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++) {
-			zeilenlaenge = spielfeldArray[zeilenNr].length;
-			if (zeilenlaenge != 9)
-				throw new FalscheZeilenlaenge(zeilenNr, zeilenlaenge);
-			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
+		for (zeilenNr = 0; zeilenNr < 9; zeilenNr++) {
+			for (spaltenNr = 0; spaltenNr < 9; spaltenNr++)
 				try {
 					int wert = spielfeldArray[zeilenNr][spaltenNr];
 					if (wert != 0)

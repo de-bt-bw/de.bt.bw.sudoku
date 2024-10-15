@@ -15,7 +15,9 @@ import de.bt.bw.sudoku.*;
 class SpielfeldImplTest {
 
 	/**
-	 * Lieblings-Sudoku 83/1 
+	 * Lieblings-Sudoku 83/1
+	 * Es wird getestet, ob das Setzen korrekt funktioniert
+	 * (Überprüfung auf Konfliktfreiheit der Werte). 
 	 */
 	@Test
 	void testeSetzen() {

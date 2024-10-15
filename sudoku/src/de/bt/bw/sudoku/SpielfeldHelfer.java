@@ -22,7 +22,7 @@ public interface SpielfeldHelfer {
 	 * Erzeugt aus einer 9x9-Matrix ein Spielfeld.
 	 * 
 	 * @param spielfeldArray das zweidimensionale Array
-	 * @return das Spielfeld oder null, falls das Array null war
+	 * @return das Spielfeld 
 	 * @throws FalscheZahl Wert für eine Zelle liegt nicht im Intervall [0:9]
 	 * @throws FalscherWert Wert ist wegen der Sudoku-Regeln im Spielfeld nicht mehr zulässig
 	 * @throws FalscheZeilenanzahl zu viele oder zu wenige Zeilen
