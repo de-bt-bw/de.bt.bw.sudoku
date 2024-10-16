@@ -19,12 +19,29 @@ class SpielfeldHelferImplTest {
 	 * Spielfeld konvertiert werden kann.
 	 */
 	@Test
-	void testErzeugeSpielfeld() {
+	void testErzeugeSpielfeldRaetsel_83_1() {
 		boolean erfolg = true;
 		Spielfeld spielfeld;
 		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
 		try {
 			spielfeld = spielfeldHelfer.erzeugeSpielfeld(Testdaten.raetsel_83_1);
+		} catch (Exception e) {
+			erfolg = false;
+		}
+		assertTrue(erfolg);
+	}
+	
+	/**
+	 * Testet, ob eine korrekte, als Matrix gegebene Lösung in ein
+	 * Spielfeld konvertiert werden kann.
+	 */
+	@Test
+	void testErzeugeSpielfeldLoesung_83_1() {
+		boolean erfolg = true;
+		Spielfeld spielfeld;
+		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
+		try {
+			spielfeld = spielfeldHelfer.erzeugeSpielfeld(Testdaten.loesung_83_1);
 		} catch (Exception e) {
 			erfolg = false;
 		}
