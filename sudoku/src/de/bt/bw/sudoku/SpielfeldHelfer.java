@@ -29,5 +29,22 @@ public interface SpielfeldHelfer {
 	 * @throws FalscheZeilenlaenge zu kurze oder zu lange Zeile
 	 */
 	public Spielfeld erzeugeSpielfeld(int[][] spielfeldArray) throws FalscheZahl, FalscherWert, FalscheZeilenanzahl, FalscheZeilenlaenge;
-
+	
+	/**
+	 * Erzeugt eine Kopie eines Spielfelds
+	 * 
+	 * @param spielfeld das zu kopierende Spielfeld
+	 * @return die Kopie
+	 */
+	public Spielfeld kopiere(Spielfeld spielfeld);
+	
+	/**
+	 * Prüft, ob das Spielfeld eine vollständige Lösung hat,
+	 * d.h. ob alle Zellen gesetzt sind
+	 * 
+	 * @param spielfeld das Spielfeld
+	 * @return true, falls alle Zellen gesetzt sind, false sonst
+	 */
+	public boolean loesungVollstaendig(Spielfeld spielfeld);
+	
 }

@@ -54,4 +54,30 @@ public class SpielfeldHelferImpl implements SpielfeldHelfer {
 		return spielfeld;
 	}
 
+	@Override
+	public Spielfeld kopiere(Spielfeld spielfeld) {
+		Spielfeld kopie = new SpielfeldImpl();
+		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
+			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
+				try {
+					int wert = spielfeld.wert(zeilenNr, spaltenNr);
+					if (wert != 0) 
+						kopie.setze(zeilenNr, spaltenNr, wert);
+				} catch (Exception e) {
+				}
+		return null;
+	}
+
+	@Override
+	public boolean loesungVollstaendig(Spielfeld spielfeld) {
+		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
+			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
+				try {
+					if (!spielfeld.gesetzt(zeilenNr, spaltenNr))
+						return false;
+				} catch (FalscheZahl e) {
+				}
+		return true;
+	}
+
 }
