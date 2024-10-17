@@ -114,7 +114,9 @@ public class LoeserBasisImpl implements Loeser {
 				}
 		} while (wertGesetzt);
 		// Überprüfe, ob die Lösung vollständig ist
-		return null;
+		if (!helfer.loesungVollstaendig(loesung))
+			throw new LoesungUnvollstaendig("Lösung unvollständig");
+		return loesung;
 	}
 
 }
