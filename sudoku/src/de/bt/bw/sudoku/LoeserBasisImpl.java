@@ -10,6 +10,7 @@ import java.util.Set;
  * Basisimplementierung eines Lösers. Solange Werte eindeutig bestimmt werden können,
  * wird die Lösung vervollständigt. Sobald eine ungesetzte Zelle gefunden wird,
  * für die kein Wert mehr möglich ist, bricht die Lösungssuche mit einer Ausnahme ab.
+ * Falls keine vollständige Lösung gefunden wird, wird ebenfalls eine Ausnahme ausgelöst.
  * 
  */
 public class LoeserBasisImpl implements Loeser {
@@ -67,6 +68,7 @@ public class LoeserBasisImpl implements Loeser {
 		SpielfeldHelfer helfer = new SpielfeldHelferImpl();
 		Spielfeld loesung = helfer.kopiere(raetsel);
 		// Konstruiere Lösung, bis kein Wert mehr gesetzt werden kann
+		// oder eine ungesetzte Zelle gefunden wird, für die kein Wert mehr möglich ist
 		boolean wertGesetzt = false;
 		do {
 			for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
@@ -99,13 +101,13 @@ public class LoeserBasisImpl implements Loeser {
 								eindeutigInBlock(loesung, zeilenNr, spaltenNr, moeglicherWert)) {
 								loesung.setze(zeilenNr, spaltenNr, moeglicherWert);
 								wertGesetzt = true;
-								break;
-							}
-							// Nächsten Wert ermitteln, falls noch vorhanden
-							if (iterator.hasNext())
-								moeglicherWert = iterator.next();
-							else
 								weiter = false;
+							} else
+								// Nächsten Wert ermitteln, falls noch vorhanden
+								if (iterator.hasNext())
+									moeglicherWert = iterator.next();
+								else
+									weiter = false;
 						} while (weiter);
 					} catch (FalscheZahl falscheZahl) {
 					} catch (FalscherZustand falscherZustand) {

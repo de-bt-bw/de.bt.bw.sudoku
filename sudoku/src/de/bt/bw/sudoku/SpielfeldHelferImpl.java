@@ -65,7 +65,7 @@ public class SpielfeldHelferImpl implements SpielfeldHelfer {
 						kopie.setze(zeilenNr, spaltenNr, wert);
 				} catch (Exception e) {
 				}
-		return null;
+		return kopie;
 	}
 
 	@Override
