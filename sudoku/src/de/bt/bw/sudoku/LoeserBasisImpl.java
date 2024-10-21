@@ -81,7 +81,7 @@ public class LoeserBasisImpl implements Loeser {
 						// 2. Fall: Wertemenge leer => Ausnahme auslösen
 						Set<Integer> moeglicheWerte = loesung.moeglicheWerte(zeilenNr, spaltenNr);
 						if (moeglicheWerte.isEmpty())
-							throw new KeinMoeglicherWert(zeilenNr, spaltenNr);
+							throw new KeinMoeglicherWert(loesung, zeilenNr, spaltenNr);
 						// 3. Fall: Wertemenge einelementig => Wert setzen, wertGesetzt = true
 						Iterator<Integer> iterator = moeglicheWerte.iterator();
 						int moeglicherWert = iterator.next();
@@ -117,7 +117,7 @@ public class LoeserBasisImpl implements Loeser {
 		} while (wertGesetzt);
 		// Überprüfe, ob die Lösung vollständig ist
 		if (!helfer.loesungVollstaendig(loesung))
-			throw new LoesungUnvollstaendig("Lösung unvollständig");
+			throw new LoesungUnvollstaendig(loesung);
 		return loesung;
 	}
 
