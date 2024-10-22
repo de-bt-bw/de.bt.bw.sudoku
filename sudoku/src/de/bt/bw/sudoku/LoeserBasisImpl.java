@@ -69,8 +69,9 @@ public class LoeserBasisImpl implements Loeser {
 		Spielfeld loesung = helfer.kopiere(raetsel);
 		// Konstruiere Lösung, bis kein Wert mehr gesetzt werden kann
 		// oder eine ungesetzte Zelle gefunden wird, für die kein Wert mehr möglich ist
-		boolean wertGesetzt = false;
+		boolean wertGesetzt;
 		do {
+			wertGesetzt = false;
 			for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
 				for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
 					try {

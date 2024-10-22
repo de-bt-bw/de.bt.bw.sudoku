@@ -48,8 +48,8 @@ public class SpielfeldImpl implements Spielfeld {
 	public Set<Integer> moeglicheWerte(int zeilenNr, int spaltenNr) throws FalscheZahl {
 		if (falscheZahl(zeilenNr, 0, 8)) throw new FalscheZahl(zeilenNr, 0, 8);
 		if (falscheZahl(spaltenNr, 0, 8)) throw new FalscheZahl(spaltenNr, 0, 8);		 
-		// Liefere null zurück, weil der Wert bereits feststeht
-		if (gesetzt(zeilenNr, spaltenNr)) return null;
+		// Liefere leere Menge zurück, weil der Wert bereits feststeht
+		if (gesetzt(zeilenNr, spaltenNr)) return new HashSet<Integer>();
 		Set<Integer> werte = new HashSet<Integer>(Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9));
 		int z, s; // Laufvariablen für Zeilen und Spalten
 		// Entferne Werte aus der gleichen Zeile
