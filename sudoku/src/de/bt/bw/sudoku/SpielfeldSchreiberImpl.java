@@ -16,12 +16,10 @@ public class SpielfeldSchreiberImpl implements SpielfeldSchreiber {
 	public void schreib(Spielfeld spielfeld, String dateiname) throws IOException {
 		PrintWriter schreiber = new PrintWriter(new File(dateiname));
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++) {
-			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
-				try {
-					schreiber.print(spielfeld.wert(zeilenNr, spaltenNr));
-					if (spaltenNr < 8) schreiber.print(' ');
-				} catch (FalscheZahl e) {
-				}
+			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
+				schreiber.print(spielfeld.wert(zeilenNr, spaltenNr));
+				if (spaltenNr < 8) schreiber.print(' ');
+			}
 			if (zeilenNr < 8) 
 				schreiber.println();
 		}

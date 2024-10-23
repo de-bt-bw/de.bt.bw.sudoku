@@ -56,7 +56,7 @@ class SpielfeldImplTest {
 			spielfeld.setze(8, 0, 4); 
 			spielfeld.setze(8, 2, 6); 
 			spielfeld.setze(8, 5, 5); 					
-		} catch (Exception e) {
+		} catch (FalscherWert e) {
 			erfolg = false;
 		}
 		assertTrue(erfolg);

@@ -20,12 +20,9 @@ public class SpielfeldHelferImpl implements SpielfeldHelfer {
 		Suche:
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
 			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
-				try {
-					if (spielfeld1.wert(zeilenNr, spaltenNr) != spielfeld2.wert(zeilenNr, spaltenNr)) {
-						erfolg = false;
-						break Suche;
-					}
-				} catch (FalscheZahl e) {
+				if (spielfeld1.wert(zeilenNr, spaltenNr) != spielfeld2.wert(zeilenNr, spaltenNr)) {
+					erfolg = false;
+					break Suche;
 				}
 		return erfolg;
 	}
@@ -43,13 +40,11 @@ public class SpielfeldHelferImpl implements SpielfeldHelfer {
 		// Spielfeld erzeugen und Werte setzen
 		Spielfeld spielfeld = new SpielfeldImpl();
 		for (zeilenNr = 0; zeilenNr < 9; zeilenNr++) {
-			for (spaltenNr = 0; spaltenNr < 9; spaltenNr++)
-				try {
-					int wert = spielfeldArray[zeilenNr][spaltenNr];
-					if (wert != 0)
-						spielfeld.setze(zeilenNr, spaltenNr, wert);
-				} catch (FalscherZustand e) {
-				}
+			for (spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
+				int wert = spielfeldArray[zeilenNr][spaltenNr];
+				if (wert != 0)
+					spielfeld.setze(zeilenNr, spaltenNr, wert);
+			}
 		}
 		return spielfeld;
 	}
@@ -72,11 +67,8 @@ public class SpielfeldHelferImpl implements SpielfeldHelfer {
 	public boolean loesungVollstaendig(Spielfeld spielfeld) {
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
 			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
-				try {
-					if (!spielfeld.gesetzt(zeilenNr, spaltenNr))
-						return false;
-				} catch (FalscheZahl e) {
-				}
+				if (!spielfeld.belegt(zeilenNr, spaltenNr))
+					return false;
 		return true;
 	}
 

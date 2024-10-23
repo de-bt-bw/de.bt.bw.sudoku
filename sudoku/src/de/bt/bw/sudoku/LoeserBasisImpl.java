@@ -21,11 +21,8 @@ public class LoeserBasisImpl implements Loeser {
 	private boolean eindeutigInZeile(Spielfeld spielfeld, int zeilenNr, int wert) {
 		int haeufigkeit = 0;
 		for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
-			try {
-				if (spielfeld.moeglicheWerte(zeilenNr, spaltenNr).contains(wert))
-					haeufigkeit++;
-			} catch (FalscheZahl e) {
-			}
+			if (spielfeld.moeglicheWerte(zeilenNr, spaltenNr).contains(wert))
+				haeufigkeit++;
 		return haeufigkeit == 1;
 	}
 	
@@ -36,11 +33,8 @@ public class LoeserBasisImpl implements Loeser {
 	private boolean eindeutigInSpalte(Spielfeld spielfeld, int spaltenNr, int wert) {
 		int haeufigkeit = 0;
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
-			try {
-				if (spielfeld.moeglicheWerte(zeilenNr, spaltenNr).contains(wert))
-					haeufigkeit++;
-			} catch (FalscheZahl e) {
-			}
+			if (spielfeld.moeglicheWerte(zeilenNr, spaltenNr).contains(wert))
+				haeufigkeit++;
 		return haeufigkeit == 1;
 	}
 	
@@ -54,11 +48,8 @@ public class LoeserBasisImpl implements Loeser {
 		int minSpalte = spaltenNr - spaltenNr % 3;
 		for (int z = minZeile; z <= minZeile + 2; z++)
 			for (int s = minSpalte; s <= minSpalte + 2; s++)
-				try {
-					if (spielfeld.moeglicheWerte(z, s).contains(wert))
-						haeufigkeit++;
-				} catch (FalscheZahl e) {
-				}
+				if (spielfeld.moeglicheWerte(z, s).contains(wert))
+					haeufigkeit++;
 		return haeufigkeit == 1;
 	}
 	
@@ -110,8 +101,6 @@ public class LoeserBasisImpl implements Loeser {
 								else
 									weiter = false;
 						} while (weiter);
-					} catch (FalscheZahl falscheZahl) {
-					} catch (FalscherZustand falscherZustand) {
 					} catch (FalscherWert falscherWert) {
 					}
 				}
