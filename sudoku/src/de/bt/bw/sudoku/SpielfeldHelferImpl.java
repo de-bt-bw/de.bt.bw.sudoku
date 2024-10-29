@@ -16,34 +16,27 @@ public class SpielfeldHelferImpl implements SpielfeldHelfer {
 			return true;
 		if (spielfeld1 == null || spielfeld2 == null)
 			return false;
-		boolean erfolg = true;
-		Suche:
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
 			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
-				if (spielfeld1.wert(zeilenNr, spaltenNr) != spielfeld2.wert(zeilenNr, spaltenNr)) {
-					erfolg = false;
-					break Suche;
-				}
-		return erfolg;
+				if (spielfeld1.wert(zeilenNr, spaltenNr) != spielfeld2.wert(zeilenNr, spaltenNr)) 
+					return false;
+		return true;
 	}
 
 	@Override
-	public Spielfeld erzeugeSpielfeld(int[][] spielfeldArray)
-			throws FalscheZahl, FalscherWert, FalscheZeilenanzahl, FalscheZeilenlaenge {
-		// Array-Dimensionen überprüfen
-		if (spielfeldArray.length != 9)
-			throw new FalscheZeilenanzahl(spielfeldArray.length);
-		int zeilenNr, spaltenNr;
-		for (zeilenNr = 0; zeilenNr < 9; zeilenNr++)
-			if (spielfeldArray[zeilenNr].length != 9)
-				throw new FalscheZeilenlaenge(zeilenNr, spielfeldArray[zeilenNr].length);
-		// Spielfeld erzeugen und Werte setzen
+	public Spielfeld erzeugeSpielfeld(int[][] spielfeldArray) {
+		if (spielfeldArray == null || spielfeldArray.length != 9)
+			return null;
 		Spielfeld spielfeld = new SpielfeldImpl();
-		for (zeilenNr = 0; zeilenNr < 9; zeilenNr++) {
-			for (spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
-				int wert = spielfeldArray[zeilenNr][spaltenNr];
-				if (wert != 0)
-					spielfeld.setze(zeilenNr, spaltenNr, wert);
+		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++) {
+			if (spielfeldArray[zeilenNr] == null || spielfeldArray[zeilenNr].length != 9)
+				return null;
+			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
+				try {
+					spielfeld.setze(zeilenNr, spaltenNr, spielfeldArray[zeilenNr][spaltenNr]);
+				} catch (FalscherWert falscherWert) {
+					return null;
+				}
 			}
 		}
 		return spielfeld;
@@ -51,14 +44,14 @@ public class SpielfeldHelferImpl implements SpielfeldHelfer {
 
 	@Override
 	public Spielfeld kopiere(Spielfeld spielfeld) {
+		if (spielfeld == null) 
+			return null;
 		Spielfeld kopie = new SpielfeldImpl();
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
 			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
 				try {
-					int wert = spielfeld.wert(zeilenNr, spaltenNr);
-					if (wert != 0) 
-						kopie.setze(zeilenNr, spaltenNr, wert);
-				} catch (Exception e) {
+					kopie.setze(zeilenNr, spaltenNr, spielfeld.wert(zeilenNr, spaltenNr));
+				} catch (FalscherWert falscherWert) {
 				}
 		return kopie;
 	}

@@ -22,24 +22,22 @@ public interface SpielfeldHelfer {
 	 * Erzeugt aus einer 9x9-Matrix ein Spielfeld.
 	 * 
 	 * @param spielfeldArray das zweidimensionale Array
-	 * @return das Spielfeld 
-	 * @throws FalscheZahl Wert für eine Zelle liegt nicht im Intervall [0:9]
-	 * @throws FalscherWert Wert ist wegen der Sudoku-Regeln im Spielfeld nicht mehr zulässig
-	 * @throws FalscheZeilenanzahl zu viele oder zu wenige Zeilen
-	 * @throws FalscheZeilenlaenge zu kurze oder zu lange Zeile
+	 * @return das Spielfeld, falls das Array eine 9x9-Matrix ist,<br>
+	 * die die Spielregeln erfüllt, und null sonst
 	 */
-	public Spielfeld erzeugeSpielfeld(int[][] spielfeldArray) throws FalscheZahl, FalscherWert, FalscheZeilenanzahl, FalscheZeilenlaenge;
+	public Spielfeld erzeugeSpielfeld(int[][] spielfeldArray);
 	
 	/**
-	 * Erzeugt eine Kopie eines Spielfelds
+	 * Erzeugt eine Kopie eines Spielfelds bzw. liefert null
+	 * zurück, wenn das Argument den Wert null hat
 	 * 
 	 * @param spielfeld das zu kopierende Spielfeld
-	 * @return die Kopie
+	 * @return die Kopie bzw. null
 	 */
 	public Spielfeld kopiere(Spielfeld spielfeld);
 	
 	/**
-	 * Prüft, ob das Spielfeld eine vollständige Lösung hat,
+	 * Prüft, ob das Spielfeld eine vollständige Lösung ist,
 	 * d.h. ob alle Zellen gesetzt sind
 	 * 
 	 * @param spielfeld das Spielfeld
