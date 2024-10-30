@@ -1,9 +1,12 @@
+
 /**
  * 
  */
 package de.bt.bw.sudoku.test;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.FileNotFoundException;
 
 import org.junit.jupiter.api.Test;
 
@@ -22,15 +25,14 @@ class SpielfeldLeserImplTest {
 	 */
 	@Test
 	void testLiesSpielfeldRaetsel_83_1() {
-		boolean erfolg = true;
-		Spielfeld spielfeld;
 		SpielfeldLeser spielfeldLeser = new SpielfeldLeserImpl();
+		Spielfeld spielfeld;
 		try {
 			spielfeld = spielfeldLeser.lies("raetsel_83_1.txt");
-		} catch (Exception e) {
-			erfolg = false;
+		} catch (FileNotFoundException dateiNichtGefunden) {
+			spielfeld = null;
 		}
-		assertTrue(erfolg);
+		assertTrue(spielfeld != null);
 	}
 
 
