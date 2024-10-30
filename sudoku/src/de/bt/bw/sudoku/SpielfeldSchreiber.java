@@ -3,7 +3,7 @@
  */
 package de.bt.bw.sudoku;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
 
 /**
  * 
@@ -20,6 +20,6 @@ public interface SpielfeldSchreiber {
 	 * @param dateiname der Name der Datei
 	 * @throws IOException beim Schreiben ausgelöste Ausnahme
 	 */
-	public void schreib(Spielfeld spielfeld, String dateiname) throws IOException;
+	public void schreib(Spielfeld spielfeld, String dateiname) throws FileNotFoundException;
 	
 }
