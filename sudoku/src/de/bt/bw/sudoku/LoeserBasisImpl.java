@@ -8,9 +8,13 @@ import java.util.Set;
 
 /**
  * Basisimplementierung eines Lösers. Solange Werte eindeutig bestimmt werden können,
- * wird die Lösung vervollständigt. Sobald eine ungesetzte Zelle gefunden wird,
- * für die kein Wert mehr möglich ist, bricht die Lösungssuche mit einer Ausnahme ab.
- * Falls keine vollständige Lösung gefunden wird, wird ebenfalls eine Ausnahme ausgelöst.
+ * wird die Lösung vervollständigt. Die Lösungssuche bricht ab, wenn kein eindeutig
+ * bestimmter Wert oder eine unbelegte Zelle mit einer leeren Menge möglicher
+ * Werte gefunden wird.
+ * Ein möglicher Wert ist eindeutig, wenn er
+ * - der einzige mögliche Wert für eine Zelle ist oder
+ * - innerhalb einer Zeile, einer Spalte oder eines Blocks genau eine 
+ *   Zelle existiert, in der dieser Wert möglich ist
  * 
  */
 public class LoeserBasisImpl implements Loeser {
@@ -53,14 +57,16 @@ public class LoeserBasisImpl implements Loeser {
 		return haeufigkeit == 1;
 	}
 	
+
 	@Override
-	public Spielfeld loese(Spielfeld raetsel) throws LoesungUnvollstaendig, KeinMoeglicherWert {
+	public Spielfeld loese(Spielfeld raetsel) {
 		// Kopiere Rätsel in Lösung
 		SpielfeldHelfer helfer = new SpielfeldHelferImpl();
 		Spielfeld loesung = helfer.kopiere(raetsel);
 		// Konstruiere Lösung, bis kein Wert mehr gesetzt werden kann
 		// oder eine ungesetzte Zelle gefunden wird, für die kein Wert mehr möglich ist
-		boolean wertGesetzt;
+		boolean wertGesetzt; // Ist in einem Durchlauf durch die Matrix ein Wert gesetzt worden?
+		// Setze Werte, solange sie eindeutig sind
 		do {
 			wertGesetzt = false;
 			for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
@@ -70,45 +76,30 @@ public class LoeserBasisImpl implements Loeser {
 						int wert = loesung.wert(zeilenNr, spaltenNr);
 						if (wert != 0)
 							continue;
-						// 2. Fall: Wertemenge leer => Ausnahme auslösen
+						// 2. Fall: Wertemenge leer => null zurückliefern
 						Set<Integer> moeglicheWerte = loesung.moeglicheWerte(zeilenNr, spaltenNr);
 						if (moeglicheWerte.isEmpty())
-							throw new KeinMoeglicherWert(loesung, zeilenNr, spaltenNr);
-						// 3. Fall: Wertemenge einelementig => Wert setzen, wertGesetzt = true
+							return null;
+						// 3. Fall: Wertemenge nicht leer => nach eindeutigem Wert suchen und setzen
 						Iterator<Integer> iterator = moeglicheWerte.iterator();
-						int moeglicherWert = iterator.next();
-						if (!iterator.hasNext()) {
-							// Nur ein Element
-							loesung.setze(zeilenNr, spaltenNr, moeglicherWert);
-							wertGesetzt = true;
-							continue;
-						}
-						// 4. Fall: Iteriere über die möglichen Werte,
-						// beginnend mit dem bereits ermittelten ersten Wert
-						boolean weiter = true;
-						do {
-							// Wert eindeutig in Zeile oder Spalte oder Block => Wert setzen, wertGesetzt = true
-							if (eindeutigInZeile(loesung, zeilenNr, moeglicherWert) ||
+						while (iterator.hasNext()) {
+							int moeglicherWert = iterator.next();
+							if (moeglicheWerte.size() == 1 ||
+								eindeutigInZeile(loesung, zeilenNr, moeglicherWert) ||
 								eindeutigInSpalte(loesung, spaltenNr, moeglicherWert) ||
 								eindeutigInBlock(loesung, zeilenNr, spaltenNr, moeglicherWert)) {
 								loesung.setze(zeilenNr, spaltenNr, moeglicherWert);
 								wertGesetzt = true;
-								weiter = false;
-							} else
-								// Nächsten Wert ermitteln, falls noch vorhanden
-								if (iterator.hasNext())
-									moeglicherWert = iterator.next();
-								else
-									weiter = false;
-						} while (weiter);
+								break;
+							}
+						}
 					} catch (FalscherWert falscherWert) {
 					}
 				}
 		} while (wertGesetzt);
 		// Überprüfe, ob die Lösung vollständig ist
 		if (!helfer.loesungVollstaendig(loesung))
-			throw new LoesungUnvollstaendig(loesung);
+			return null;
 		return loesung;
 	}
-
 }
