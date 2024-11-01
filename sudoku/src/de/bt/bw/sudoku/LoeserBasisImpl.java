@@ -6,23 +6,18 @@ package de.bt.bw.sudoku;
 import java.util.Iterator;
 import java.util.Set;
 
+
 /**
- * Basisimplementierung eines Lösers. Solange Werte eindeutig bestimmt werden können,
- * wird die Lösung vervollständigt. Die Lösungssuche bricht ab, wenn kein eindeutig
- * bestimmter Wert oder eine unbelegte Zelle mit einer leeren Menge möglicher
- * Werte gefunden wird.
- * Ein möglicher Wert ist eindeutig, wenn er
- * - der einzige mögliche Wert für eine Zelle ist oder
- * - innerhalb einer Zeile, einer Spalte oder eines Blocks genau eine 
- *   Zelle existiert, in der dieser Wert möglich ist
- * 
+ * Basisimplementierung eines Lösers. Solange Werte eindeutig bestimmbar sind,
+ * wird die Lösung vervollständigt. Es wird nicht garantiert, dass eine Lösung
+ * gefunden wird, falls sie existiert.
  */
 public class LoeserBasisImpl implements Loeser {
 
 	/*
 	 * Überprüft, ob der mögliche Wert genau einmal in der Zeile vorkommt
 	 */
-	private boolean eindeutigInZeile(Spielfeld spielfeld, int zeilenNr, int wert) {
+	protected boolean eindeutigInZeile(Spielfeld spielfeld, int zeilenNr, int wert) {
 		int haeufigkeit = 0;
 		for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
 			if (spielfeld.moeglicheWerte(zeilenNr, spaltenNr).contains(wert))
@@ -34,7 +29,7 @@ public class LoeserBasisImpl implements Loeser {
 	/*
 	 * Überprüft, ob der mögliche Wert genau einmal in der Spalte vorkommt
 	 */
-	private boolean eindeutigInSpalte(Spielfeld spielfeld, int spaltenNr, int wert) {
+	protected boolean eindeutigInSpalte(Spielfeld spielfeld, int spaltenNr, int wert) {
 		int haeufigkeit = 0;
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
 			if (spielfeld.moeglicheWerte(zeilenNr, spaltenNr).contains(wert))
@@ -46,7 +41,7 @@ public class LoeserBasisImpl implements Loeser {
 	 * Überprüft, ob der mögliche Wert genau einmal in dem Block vorkommt,
 	 * der die durch Zeilen- und Spaltennummer identifizierte Zelle enthält
 	 */
-	private boolean eindeutigInBlock(Spielfeld spielfeld, int zeilenNr, int spaltenNr, int wert) {
+	protected boolean eindeutigInBlock(Spielfeld spielfeld, int zeilenNr, int spaltenNr, int wert) {
 		int haeufigkeit = 0;
 		int minZeile = zeilenNr - zeilenNr % 3;
 		int minSpalte = spaltenNr - spaltenNr % 3;
@@ -57,7 +52,16 @@ public class LoeserBasisImpl implements Loeser {
 		return haeufigkeit == 1;
 	}
 	
-
+	/**
+	 * Basisimplementierung eines Lösers. Solange Werte eindeutig bestimmt werden können,
+	 * wird die Lösung vervollständigt. Die Lösungssuche bricht ab, wenn kein eindeutig
+	 * bestimmter Wert oder eine unbelegte Zelle mit einer leeren Menge möglicher
+	 * Werte gefunden wird.
+	 * Ein möglicher Wert ist eindeutig, wenn er
+	 * - der einzige mögliche Wert für eine Zelle ist oder
+	 * - innerhalb einer Zeile, einer Spalte oder eines Blocks genau eine 
+	 *   Zelle existiert, in der dieser Wert möglich ist
+	 */
 	@Override
 	public Spielfeld loese(Spielfeld raetsel) {
 		// Kopiere Rätsel in Lösung
