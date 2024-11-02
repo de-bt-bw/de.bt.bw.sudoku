@@ -109,19 +109,88 @@ public class LoeserUniversalImpl extends LoeserBasisImpl {
 	
 	/**
 	 * Nimmt Züge zurück, bis ein alternativer Zug gefunden wird, der dann ausgeführt wird.
+	 * 
 	 * @return true, falls ein neuer Zug gefunden werden konnte, false sonst
 	 */
 	protected boolean neuerVersuch() {
 		boolean erfolg = false;
+		try {
+			while (!(erfolg || zugStapel.empty())) {
+				Zug zug = zugStapel.pop();
+				// Zug zurücknehmen
+				loesung.setze(zug.zeilenNr, zug.spaltenNr, 0);
+				if (!zug.eindeutig) {
+					// Falls noch vorhanden, alternativen Wert setzen
+					// Dazu minimalen noch nicht verbrauchten Wert suchen
+					Set<Integer> moeglicheWerte = loesung.moeglicheWerte(zug.zeilenNr, zug.spaltenNr);
+					int neuerWert = 10;
+					Iterator<Integer> iterator = moeglicheWerte.iterator();
+					while (iterator.hasNext()) {
+						int naechsterWert = iterator.next();
+						if (zug.wert < naechsterWert) {
+							erfolg = true; // Alternativer Wert vorhanden
+							if (naechsterWert < neuerWert)
+								neuerWert = naechsterWert;
+						}
+					}
+					if (erfolg) { // Neuen Zug machen
+						loesung.setze(zug.zeilenNr, zug.spaltenNr, neuerWert);
+						zugStapel.push(new Zug(zug.zeilenNr, zug.spaltenNr, neuerWert, false));
+					}
+				}
+			}
+		} catch (FalscherWert falscherWert) {
+		}
 		return erfolg;
 	}
 	
 	/**
 	 * Vorbedingung: Lösung ist unvollständig, und es gibt keinen eindeutig bestimmbaren Wert.
-	 * Dann wird ein Wert geraten.
+	 * Dann wird ein Wert geraten. Dazu wird eine Zelle mit einer minimalen Menge möglicher 
+	 * Werte gesucht, um die Wahrscheinlichkeit einer Fehlentscheidung zu minimieren.
+	 * Es wird der minimale Wert gesetzt; beim Backtracking werden die möglichen Werte
+	 * in aufsteigender Folge probiert.
 	 */
 	protected void rate() {
-		
+		// Bestimme Zelle mit minimaler Zahl möglicher Werte
+		int minZeilenNr = -1, minSpaltenNr = -1, minKardinalitaet = 10;
+		// Da mindestens eine Zelle unbelegt ist, werden die Werte obiger Variablen
+		// mindestens einmal in der Schleife neu gesetzt
+		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
+			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
+				if (loesung.wert(zeilenNr, spaltenNr) == 0) {
+					int kardinalitaet = loesung.moeglicheWerte(zeilenNr, spaltenNr).size();
+					if (kardinalitaet < minKardinalitaet) {
+						minZeilenNr = zeilenNr;
+						minSpaltenNr = spaltenNr;
+						minKardinalitaet = kardinalitaet;
+					}
+				}
+		// Setze diese Zelle auf den minimalen möglichen Wert
+		int minWert = minimum(loesung.moeglicheWerte(minZeilenNr, minSpaltenNr));
+		try {
+			loesung.setze(minZeilenNr, minSpaltenNr, minWert);
+			Zug zug = new Zug(minZeilenNr, minSpaltenNr, minWert, false);
+			zugStapel.push(zug);
+		} catch (FalscherWert falscherWert) {
+		}
+	}
+	
+	/**
+	 * Bestimmt das Minimum einer nichtleeren Menge ganzer Zahlen
+	 * 
+	 * @param menge die nichtleere Menge ganzer Zahlen
+	 * @return die kleinste Zahl in dieser Menge
+	 */
+	protected int minimum(Set<Integer> menge) {
+		Iterator<Integer> iterator = menge.iterator();
+		int minimum = iterator.next();
+		while (iterator.hasNext()) {
+			int naechsteZahl = iterator.next();
+			if (naechsteZahl < minimum)
+				minimum = naechsteZahl;
+		}
+		return minimum;
 	}
 
 }
