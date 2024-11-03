@@ -75,29 +75,31 @@ public class LoeserBasisImpl implements Loeser {
 			wertGesetzt = false;
 			for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
 				for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
-					try {
-						// 1. Fall: Wert ist schon gesetzt => überspringen
-						int wert = loesung.wert(zeilenNr, spaltenNr);
-						if (wert != 0)
-							continue;
-						// 2. Fall: Wertemenge leer => null zurückliefern
-						Set<Integer> moeglicheWerte = loesung.moeglicheWerte(zeilenNr, spaltenNr);
-						if (moeglicheWerte.isEmpty())
-							return null;
-						// 3. Fall: Wertemenge nicht leer => nach eindeutigem Wert suchen und setzen
-						Iterator<Integer> iterator = moeglicheWerte.iterator();
-						while (iterator.hasNext()) {
-							int moeglicherWert = iterator.next();
-							if (moeglicheWerte.size() == 1 ||
-								eindeutigInZeile(loesung, zeilenNr, moeglicherWert) ||
-								eindeutigInSpalte(loesung, spaltenNr, moeglicherWert) ||
-								eindeutigInBlock(loesung, zeilenNr, spaltenNr, moeglicherWert)) {
+					// 1. Fall: Wert ist schon gesetzt => überspringen
+					int wert = loesung.wert(zeilenNr, spaltenNr);
+					if (wert != 0)
+						continue;
+					// 2. Fall: Wertemenge leer => null zurückliefern
+					Set<Integer> moeglicheWerte = loesung.moeglicheWerte(zeilenNr, spaltenNr);
+					if (moeglicheWerte.isEmpty())
+						return null;
+					// 3. Fall: Wertemenge nicht leer => nach eindeutigem Wert suchen und setzen
+					Iterator<Integer> iterator = moeglicheWerte.iterator();
+					while (iterator.hasNext()) {
+						int moeglicherWert = iterator.next();
+						if (moeglicheWerte.size() == 1 ||
+							eindeutigInZeile(loesung, zeilenNr, moeglicherWert) ||
+							eindeutigInSpalte(loesung, spaltenNr, moeglicherWert) ||
+							eindeutigInBlock(loesung, zeilenNr, spaltenNr, moeglicherWert)) {
+							try {
 								loesung.setze(zeilenNr, spaltenNr, moeglicherWert);
-								wertGesetzt = true;
-								break;
+							} catch (FalscherWert e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
 							}
+							wertGesetzt = true;
+							break;
 						}
-					} catch (FalscherWert falscherWert) {
 					}
 				}
 		} while (wertGesetzt);
