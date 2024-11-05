@@ -44,4 +44,20 @@ class LoeserUniversalImplTest {
 		assertTrue(spielfeldHelfer.gleich(loesung_FitImKopf, korrekte_loesung_FitImKopf));
 	}
 
+	@Test
+	void testLoeseRaetsel_Leer() {
+		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
+		Spielfeld raetsel_Leer = spielfeldHelfer.erzeugeSpielfeld(Testdaten.raetsel_Leer);
+		Loeser loeser = new LoeserUniversalImpl();
+		Spielfeld loesung_Leer = loeser.loese(raetsel_Leer);
+		assertTrue(loesung_Leer != null); 
+		// Die Lösung ist nicht eindeutig, sie wird daher nur ausgegeben und nicht verglichen
+		SpielfeldSchreiber spielfeldSchreiber = new SpielfeldSchreiberImpl();
+		try {
+			spielfeldSchreiber.schreib(loesung_Leer, "loesung_Leer.txt");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
