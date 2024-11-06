@@ -14,6 +14,7 @@ import de.bt.bw.sudoku.LoeserUniversalImpl.Zug;
  * Bei Erreichen einer Sackgasse wird Backtracking ausgelöst. Es wird entweder
  * eine vollständige Lösung zurückgeliefert, oder null, falls der Suchraum 
  * erschöpft wird und die Lösung nicht vollständig ist.
+ * Vorsicht: extrem ineffiziente Lösung, daher einige Testfälle auskommentiert
  */
 public class LoeserTiefensucheImpl implements Loeser {
 
@@ -28,14 +29,6 @@ public class LoeserTiefensucheImpl implements Loeser {
 		}
 	}
 	
-	protected Stack<Zug> zugStapel;
-	
-	protected Spielfeld loesung;
-	
-	int zeilenNr = 0, spaltenNr = 0;
-	
-	Set<Integer> moeglicheWerte;
-
 	/**
 	 * Tiefensuche ohne Optimierungen. Bei einem Zug wird jeweils ein möglicher Wert
 	 * ausgewählt, ohne zu überprüfen, ob die Belegung der Zelle bereits eindeutig
@@ -45,28 +38,28 @@ public class LoeserTiefensucheImpl implements Loeser {
 	public Spielfeld loese(Spielfeld raetsel) {
 		// Initialisierung
 		SpielfeldHelfer helfer = new SpielfeldHelferImpl();
-		loesung = helfer.kopiere(raetsel);
-		zugStapel = new Stack<Zug>();
+		Spielfeld loesung = helfer.kopiere(raetsel);
+		Stack<Zug> zugStapel = new Stack<Zug>();
+		int zeilenNr = 0, spaltenNr = 0;
 		boolean erfolg = true; // Wird auf false gesetzt, wenn der Suchraum erschöpft ist
 		
 		// Die Lösung wird in einer zyklischen Schleife über die Zellen des Spielfelds gesucht
 		while (erfolg && !helfer.loesungVollstaendig(loesung)) {
 			int wert = loesung.wert(zeilenNr, spaltenNr);
 			if (wert == 0) { // Belegte Felder überspringen
-				moeglicheWerte = loesung.moeglicheWerte(zeilenNr, spaltenNr);
-				if (moeglicheWerte.isEmpty()) {
-					erfolg = neuerVersuch();
+				if (loesung.moeglicheWerte(zeilenNr, spaltenNr).isEmpty()) {
+					erfolg = neuerVersuch(loesung, zugStapel);
 				} else {
-					rate();
+					naechsterZug(loesung, zugStapel, zeilenNr, spaltenNr, loesung.moeglicheWerte(zeilenNr, spaltenNr));
 				}
 			}
 			// Nächste Zelle ermitteln
-			if (spaltenNr == 8) {
-				spaltenNr = 0; 
-				zeilenNr = (zeilenNr + 1) % 9;
-			} else {
-				spaltenNr++;
-			}
+			if (erfolg) {
+				spaltenNr = (spaltenNr + 1) % 9;
+				if (spaltenNr == 0) {
+					zeilenNr = (zeilenNr + 1) % 9;
+				}
+			}			
 		}
 		
 		// Abschlussbehandlung
@@ -81,10 +74,9 @@ public class LoeserTiefensucheImpl implements Loeser {
 	 * 
 	 * @return true, falls ein neuer Zug gefunden werden konnte, false sonst
 	 */
-	protected boolean neuerVersuch() {
-		Zug zug;
+	protected boolean neuerVersuch(Spielfeld loesung, Stack<Zug> zugStapel) {
 		while (!zugStapel.empty()) {
-			zug = zugStapel.pop();
+			Zug zug = zugStapel.pop();
 			// Zug zurücknehmen
 			try {
 				loesung.setze(zug.zeilenNr, zug.spaltenNr, 0);
@@ -92,25 +84,20 @@ public class LoeserTiefensucheImpl implements Loeser {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			moeglicheWerte = zug.alternativeWerte;
-			if (!moeglicheWerte.isEmpty()) {
+			if (!zug.alternativeWerte.isEmpty()) {
 				// Alternativen Zug ausführen
-				rate();
-				break;
+				naechsterZug(loesung, zugStapel, zug.zeilenNr, zug.spaltenNr, zug.alternativeWerte);
+				return true;
 			}
 		}
-		if (zugStapel.empty()) { // Suchraum erschöpft
-			return false;
-		} else { 
-			return true;			
-		}
+		return false;			
 	}
 	
 	/**
 	 * Belegt die Zelle mit dem kleinsten möglichen Wert.
 	 * Vorbedingung: Die Menge der möglichen Werte ist nicht leer.
 	 */
-	protected void rate() {
+	protected void naechsterZug(Spielfeld loesung, Stack<Zug> zugStapel, int zeilenNr, int spaltenNr, Set<Integer> moeglicheWerte) {
 		int neuerWert = minimum(moeglicheWerte);
 		moeglicheWerte.remove(neuerWert);
 		try {
