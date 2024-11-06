@@ -14,7 +14,6 @@ import de.bt.bw.sudoku.LoeserUniversalImpl.Zug;
  * Bei Erreichen einer Sackgasse wird Backtracking ausgelöst. Es wird entweder
  * eine vollständige Lösung zurückgeliefert, oder null, falls der Suchraum 
  * erschöpft wird und die Lösung nicht vollständig ist.
- * Vorsicht: extrem ineffiziente Lösung, daher einige Testfälle auskommentiert
  */
 public class LoeserTiefensucheImpl implements Loeser {
 
@@ -30,9 +29,8 @@ public class LoeserTiefensucheImpl implements Loeser {
 	}
 	
 	/**
-	 * Tiefensuche ohne Optimierungen. Bei einem Zug wird jeweils ein möglicher Wert
-	 * ausgewählt, ohne zu überprüfen, ob die Belegung der Zelle bereits eindeutig
-	 * in der Zeile, der Spalte oder dem Block fixiert ist.
+	 * Tiefensuche. Bei einem Zug wird jeweils ein eingeschränkter möglicher Wert
+	 * ausgewählt (Definition s. Interface von Helfer).
 	 */
 	@Override
 	public Spielfeld loese(Spielfeld raetsel) {
@@ -47,10 +45,11 @@ public class LoeserTiefensucheImpl implements Loeser {
 		while (erfolg && !helfer.loesungVollstaendig(loesung)) {
 			int wert = loesung.wert(zeilenNr, spaltenNr);
 			if (wert == 0) { // Belegte Felder überspringen
-				if (loesung.moeglicheWerte(zeilenNr, spaltenNr).isEmpty()) {
+				Set<Integer> eingeschraenkteMoeglicheWerte = helfer.eingeschraenkteMoeglicheWerte(loesung, zeilenNr, spaltenNr);
+				if (eingeschraenkteMoeglicheWerte.isEmpty()) {
 					erfolg = neuerVersuch(loesung, zugStapel);
 				} else {
-					naechsterZug(loesung, zugStapel, zeilenNr, spaltenNr, loesung.moeglicheWerte(zeilenNr, spaltenNr));
+					naechsterZug(loesung, zugStapel, zeilenNr, spaltenNr, eingeschraenkteMoeglicheWerte);
 				}
 			}
 			// Nächste Zelle ermitteln

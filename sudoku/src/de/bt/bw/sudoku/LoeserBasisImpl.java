@@ -14,43 +14,6 @@ import java.util.Set;
  */
 public class LoeserBasisImpl implements Loeser {
 
-	/*
-	 * Überprüft, ob der mögliche Wert genau einmal in der Zeile vorkommt
-	 */
-	protected boolean eindeutigInZeile(Spielfeld spielfeld, int zeilenNr, int wert) {
-		int haeufigkeit = 0;
-		for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
-			if (spielfeld.moeglicheWerte(zeilenNr, spaltenNr).contains(wert))
-				haeufigkeit++;
-		return haeufigkeit == 1;
-	}
-	
-	
-	/*
-	 * Überprüft, ob der mögliche Wert genau einmal in der Spalte vorkommt
-	 */
-	protected boolean eindeutigInSpalte(Spielfeld spielfeld, int spaltenNr, int wert) {
-		int haeufigkeit = 0;
-		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
-			if (spielfeld.moeglicheWerte(zeilenNr, spaltenNr).contains(wert))
-				haeufigkeit++;
-		return haeufigkeit == 1;
-	}
-	
-	/*
-	 * Überprüft, ob der mögliche Wert genau einmal in dem Block vorkommt,
-	 * der die durch Zeilen- und Spaltennummer identifizierte Zelle enthält
-	 */
-	protected boolean eindeutigInBlock(Spielfeld spielfeld, int zeilenNr, int spaltenNr, int wert) {
-		int haeufigkeit = 0;
-		int minZeile = zeilenNr - zeilenNr % 3;
-		int minSpalte = spaltenNr - spaltenNr % 3;
-		for (int z = minZeile; z <= minZeile + 2; z++)
-			for (int s = minSpalte; s <= minSpalte + 2; s++)
-				if (spielfeld.moeglicheWerte(z, s).contains(wert))
-					haeufigkeit++;
-		return haeufigkeit == 1;
-	}
 	
 	/**
 	 * Basisimplementierung eines Lösers. Solange Werte eindeutig bestimmt werden können,
@@ -80,27 +43,22 @@ public class LoeserBasisImpl implements Loeser {
 					if (wert != 0)
 						continue;
 					// 2. Fall: Wertemenge leer => null zurückliefern
-					Set<Integer> moeglicheWerte = loesung.moeglicheWerte(zeilenNr, spaltenNr);
-					if (moeglicheWerte.isEmpty())
+					Set<Integer> eingeschraenkteMoeglicheWerte = helfer.eingeschraenkteMoeglicheWerte(loesung, zeilenNr, spaltenNr);
+					if (eingeschraenkteMoeglicheWerte.isEmpty())
 						return null;
-					// 3. Fall: Wertemenge nicht leer => nach eindeutigem Wert suchen und setzen
-					Iterator<Integer> iterator = moeglicheWerte.iterator();
-					while (iterator.hasNext()) {
-						int moeglicherWert = iterator.next();
-						if (moeglicheWerte.size() == 1 ||
-							eindeutigInZeile(loesung, zeilenNr, moeglicherWert) ||
-							eindeutigInSpalte(loesung, spaltenNr, moeglicherWert) ||
-							eindeutigInBlock(loesung, zeilenNr, spaltenNr, moeglicherWert)) {
-							try {
-								loesung.setze(zeilenNr, spaltenNr, moeglicherWert);
-							} catch (FalscherWert e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							wertGesetzt = true;
-							break;
+					// 3. Fall: Wertemenge einelementig => eindeutig bestimmten Wert setzen
+					if (eingeschraenkteMoeglicheWerte.size() == 1) {
+						Iterator<Integer> iterator = eingeschraenkteMoeglicheWerte.iterator();
+						wert = iterator.next(); // Der einzige Wert in der Menge
+						try {
+							loesung.setze(zeilenNr, spaltenNr, wert);
+						} catch (FalscherWert e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
+						wertGesetzt = true;
 					}
+					// Bei nicht eindeutigem Wert nichts tun
 				}
 		} while (wertGesetzt);
 		// Überprüfe, ob die Lösung vollständig ist

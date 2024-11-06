@@ -11,7 +11,7 @@ import java.util.Stack;
  * Falls zu einem gegebenen Rätsel eine Lösung existiert, wird sie gefunden
  * und zurückgegeben. Sonst wird null zurückgegeben.
  */
-public class LoeserUniversalImpl extends LoeserBasisImpl {
+public class LoeserUniversalImpl implements Loeser {
 
 	protected class Zug {
 		int zeilenNr, spaltenNr, wert;
@@ -67,30 +67,25 @@ public class LoeserUniversalImpl extends LoeserBasisImpl {
 						if (wert != 0)
 							continue;
 						// 2. Fall: Wertemenge leer => Schleife abbrechen
-						Set<Integer> moeglicheWerte = loesung.moeglicheWerte(zeilenNr, spaltenNr);
-						if (moeglicheWerte.isEmpty()) {
+						Set<Integer> eingeschraenkteMoeglicheWerte = helfer.eingeschraenkteMoeglicheWerte(loesung, zeilenNr, spaltenNr);
+						if (eingeschraenkteMoeglicheWerte.isEmpty()) {
 							konsistent = false;
 							break MatrixSchleife;
 						}
-						// 3. Fall: Wertemenge nicht leer => nach eindeutigem Wert suchen und setzen
-						Iterator<Integer> iterator = moeglicheWerte.iterator();
-						while (iterator.hasNext()) {
-							int moeglicherWert = iterator.next();
-							if (moeglicheWerte.size() == 1 ||
-								eindeutigInZeile(loesung, zeilenNr, moeglicherWert) ||
-								eindeutigInSpalte(loesung, spaltenNr, moeglicherWert) ||
-								eindeutigInBlock(loesung, zeilenNr, spaltenNr, moeglicherWert)) {
-								try {
-									loesung.setze(zeilenNr, spaltenNr, moeglicherWert);
-								} catch (FalscherWert e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-								zugStapel.push(new Zug(zeilenNr, spaltenNr, moeglicherWert, true));
-								wertGesetzt = true;
-								break;
+						// 3. Fall: Wertemenge einelementig => eindeutig bestimmten Wert setzen
+						if (eingeschraenkteMoeglicheWerte.size() == 1) {
+							Iterator<Integer> iterator = eingeschraenkteMoeglicheWerte.iterator();
+							wert = iterator.next(); // Der einzige Wert in der Menge
+							try {
+								loesung.setze(zeilenNr, spaltenNr, wert);
+							} catch (FalscherWert e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
 							}
+							zugStapel.push(new Zug(zeilenNr, spaltenNr, wert, true));
+							wertGesetzt = true;
 						}
+						// Bei nicht eindeutigem Wert nichts tun
 					} 
 			} while (wertGesetzt && konsistent);
 			// Die do-Schleife terminiert, wenn in der Matrixschleife kein Wert gesetzt werden konnte

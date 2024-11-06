@@ -3,6 +3,8 @@
  */
 package de.bt.bw.sudoku;
 
+import java.util.Set;
+
 /**
  * Sammlung von Hilfsoperationen auf Spielfeldern
  */
@@ -44,5 +46,20 @@ public interface SpielfeldHelfer {
 	 * @return true, falls alle Zellen gesetzt sind, false sonst
 	 */
 	public boolean loesungVollstaendig(Spielfeld spielfeld);
+	
+	/**
+	 * Für eine Zelle wird zunächst die Zahl der möglichen Werte bestimmt (s. Interface
+	 * Spielfeld). Anschließend wird in dieser Menge ein eindeutiger Wert gesucht.
+	 * Ein Wert ist eindeutig, wenn er in keiner anderen Zelle derselben Zeile,
+	 * derselben Spalte oder desselben Blocks gesetzt werden kann. Wenn ein eindeutiger
+	 * Wert gefunden, wird die entsprechende einelementige Menge zurückgeliefert,
+	 * sonst die Menge möglicher Werte.
+	 * 
+	 * @param spielfeld das Spielfeld
+	 * @param zeilenNr die Zeile der Zelle
+	 * @param spaltenNr die Spalte der Zelle
+	 * @return die eingeschränkte Wertemenge
+	 */
+	Set<Integer> eingeschraenkteMoeglicheWerte(Spielfeld spielfeld, int zeilenNr, int spaltenNr);
 	
 }

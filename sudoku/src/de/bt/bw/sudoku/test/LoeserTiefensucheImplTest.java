@@ -33,21 +33,19 @@ class LoeserTiefensucheImplTest {
 		assertTrue(spielfeldHelfer.gleich(loesung_83_1, korrekte_loesung_83_1));
 	}
 	
-// Die folgenden Tests wurden wegen zu hoher Laufzeiten auskommentiert
 	
-// Laufzeit ca. 90 s
-//	@Test
-//	void testLoeseRaetsel_FitImKopf() {
-//		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
-//		Spielfeld raetsel_FitImKopf = spielfeldHelfer.erzeugeSpielfeld(Testdaten.raetsel_FitImKopf);
-//		Loeser loeser = new LoeserTiefensucheImpl();
-//		Spielfeld loesung_FitImKopf = loeser.loese(raetsel_FitImKopf);
-//		assertTrue(loesung_FitImKopf != null); // Vom Universallöser lösbar
-//		Spielfeld korrekte_loesung_FitImKopf = spielfeldHelfer.erzeugeSpielfeld(Testdaten.loesung_FitImKopf);
-//		assertTrue(spielfeldHelfer.gleich(loesung_FitImKopf, korrekte_loesung_FitImKopf));
-//	}
-//
-// Laufzeit unbekannt, Test abgebrochen
+	@Test
+	void testLoeseRaetsel_FitImKopf() {
+		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
+		Spielfeld raetsel_FitImKopf = spielfeldHelfer.erzeugeSpielfeld(Testdaten.raetsel_FitImKopf);
+		Loeser loeser = new LoeserTiefensucheImpl();
+		Spielfeld loesung_FitImKopf = loeser.loese(raetsel_FitImKopf);
+		assertTrue(loesung_FitImKopf != null); // Vom Universallöser lösbar
+		Spielfeld korrekte_loesung_FitImKopf = spielfeldHelfer.erzeugeSpielfeld(Testdaten.loesung_FitImKopf);
+		assertTrue(spielfeldHelfer.gleich(loesung_FitImKopf, korrekte_loesung_FitImKopf));
+	}
+
+// Testfall auskommentiert, zu ineffizient 
 //	@Test
 //	void testLoeseRaetsel_Leer() {
 //		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
