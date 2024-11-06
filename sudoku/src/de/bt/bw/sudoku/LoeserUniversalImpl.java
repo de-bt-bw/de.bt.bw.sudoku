@@ -113,6 +113,7 @@ public class LoeserUniversalImpl implements Loeser {
 	 */
 	protected boolean neuerVersuch() {
 		boolean erfolg = false;
+		SpielfeldHelfer helfer = new SpielfeldHelferImpl();
 		while (!(erfolg || zugStapel.empty())) {
 			try {
 				Zug zug = zugStapel.pop();
@@ -121,9 +122,9 @@ public class LoeserUniversalImpl implements Loeser {
 				if (!zug.eindeutig) {
 					// Falls noch vorhanden, alternativen Wert setzen
 					// Dazu minimalen noch nicht verbrauchten Wert suchen
-					Set<Integer> moeglicheWerte = loesung.moeglicheWerte(zug.zeilenNr, zug.spaltenNr);
+					Set<Integer> eingeschraenkteMoeglicheWerte = helfer.eingeschraenkteMoeglicheWerte(loesung, zug.zeilenNr, zug.spaltenNr);
 					int neuerWert = 10;
-					Iterator<Integer> iterator = moeglicheWerte.iterator();
+					Iterator<Integer> iterator = eingeschraenkteMoeglicheWerte.iterator();
 					while (iterator.hasNext()) {
 						int naechsterWert = iterator.next();
 						if (zug.wert < naechsterWert) {
@@ -157,10 +158,11 @@ public class LoeserUniversalImpl implements Loeser {
 		int minZeilenNr = -1, minSpaltenNr = -1, minKardinalitaet = 10;
 		// Da mindestens eine Zelle unbelegt ist, werden die Werte obiger Variablen
 		// mindestens einmal in der Schleife neu gesetzt
+		SpielfeldHelfer helfer = new SpielfeldHelferImpl();
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
 			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
 				if (loesung.wert(zeilenNr, spaltenNr) == 0) {
-					int kardinalitaet = loesung.moeglicheWerte(zeilenNr, spaltenNr).size();
+					int kardinalitaet = helfer.eingeschraenkteMoeglicheWerte(loesung, zeilenNr, spaltenNr).size();
 					if (kardinalitaet < minKardinalitaet) {
 						minZeilenNr = zeilenNr;
 						minSpaltenNr = spaltenNr;
@@ -168,7 +170,7 @@ public class LoeserUniversalImpl implements Loeser {
 					}
 				}
 		// Setze diese Zelle auf den minimalen möglichen Wert
-		int minWert = minimum(loesung.moeglicheWerte(minZeilenNr, minSpaltenNr));
+		int minWert = minimum(helfer.eingeschraenkteMoeglicheWerte(loesung, minZeilenNr, minSpaltenNr));
 		try {
 			loesung.setze(minZeilenNr, minSpaltenNr, minWert);
 		} catch (FalscherWert e) {
