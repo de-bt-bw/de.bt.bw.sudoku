@@ -93,11 +93,12 @@ public class LoeserTiefensucheImpl implements Loeser {
 	}
 	
 	/**
-	 * Belegt die Zelle mit dem kleinsten möglichen Wert.
+	 * Belegt die Zelle mit einem Element aus der Menge möglicher Werte.
 	 * Vorbedingung: Die Menge der möglichen Werte ist nicht leer.
 	 */
 	protected void naechsterZug(Spielfeld loesung, Stack<Zug> zugStapel, int zeilenNr, int spaltenNr, Set<Integer> moeglicheWerte) {
-		int neuerWert = minimum(moeglicheWerte);
+		Iterator<Integer> iterator = moeglicheWerte.iterator();
+		int neuerWert = iterator.next();
 		moeglicheWerte.remove(neuerWert);
 		try {
 			loesung.setze(zeilenNr, spaltenNr, neuerWert);
