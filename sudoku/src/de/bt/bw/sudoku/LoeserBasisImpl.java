@@ -27,6 +27,7 @@ public class LoeserBasisImpl implements Loeser {
 	 */
 	@Override
 	public Spielfeld loese(Spielfeld raetsel) {
+		if (raetsel == null) return null;
 		// Kopiere Rätsel in Lösung
 		SpielfeldHelfer helfer = new SpielfeldHelferImpl();
 		Spielfeld loesung = helfer.kopiere(raetsel);

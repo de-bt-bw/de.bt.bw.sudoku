@@ -5,8 +5,6 @@ package de.bt.bw.sudoku.test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
 import de.bt.bw.sudoku.*;

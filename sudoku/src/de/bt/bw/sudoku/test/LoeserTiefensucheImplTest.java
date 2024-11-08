@@ -5,8 +5,6 @@ package de.bt.bw.sudoku.test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.FileNotFoundException;
-
 import org.junit.jupiter.api.Test;
 
 import de.bt.bw.sudoku.Loeser;
@@ -14,8 +12,6 @@ import de.bt.bw.sudoku.LoeserTiefensucheImpl;
 import de.bt.bw.sudoku.Spielfeld;
 import de.bt.bw.sudoku.SpielfeldHelfer;
 import de.bt.bw.sudoku.SpielfeldHelferImpl;
-import de.bt.bw.sudoku.SpielfeldSchreiber;
-import de.bt.bw.sudoku.SpielfeldSchreiberImpl;
 
 /**
  * 

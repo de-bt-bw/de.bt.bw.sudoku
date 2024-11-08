@@ -7,23 +7,22 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
 
-import de.bt.bw.sudoku.LoeserUniversalImpl.Zug;
 
 /**
- * Lösung durch Tiefensuche. Jede Zelle wird mit einem möglichen Wert gefüllt.
+ * Lösung durch Tiefensuche. Die Zellen werden zyklisch durchlaufen.
+ * Jede Zelle wird mit einem möglichen Wert gefüllt.
  * Bei Erreichen einer Sackgasse wird Backtracking ausgelöst. Es wird entweder
  * eine vollständige Lösung zurückgeliefert, oder null, falls der Suchraum 
  * erschöpft wird und die Lösung nicht vollständig ist.
  */
 public class LoeserTiefensucheImpl implements Loeser {
 
-	protected class Zug {
-		int zeilenNr, spaltenNr, wert;
+	private class Zug {
+		int zeilenNr, spaltenNr;
 		Set<Integer> alternativeWerte; // Werte, die noch nicht ausprobiert wurden
-		Zug(int zeilenNr, int spaltenNr, int wert, Set<Integer> alternativeWerte) {
+		Zug(int zeilenNr, int spaltenNr, Set<Integer> alternativeWerte) {
 			this.zeilenNr = zeilenNr;
 			this.spaltenNr = spaltenNr;
-			this.wert = wert;
 			this.alternativeWerte = alternativeWerte;
 		}
 	}
@@ -34,31 +33,30 @@ public class LoeserTiefensucheImpl implements Loeser {
 	 */
 	@Override
 	public Spielfeld loese(Spielfeld raetsel) {
+		if (raetsel == null) return null;
 		// Initialisierung
 		SpielfeldHelfer helfer = new SpielfeldHelferImpl();
 		Spielfeld loesung = helfer.kopiere(raetsel);
 		Stack<Zug> zugStapel = new Stack<Zug>();
-		int zeilenNr = 0, spaltenNr = 0;
+		int zeilenNr = 8, spaltenNr = 8;
 		boolean erfolg = true; // Wird auf false gesetzt, wenn der Suchraum erschöpft ist
 		
 		// Die Lösung wird in einer zyklischen Schleife über die Zellen des Spielfelds gesucht
 		while (erfolg && !helfer.loesungVollstaendig(loesung)) {
+			// Nächste Zelle ermitteln
+			spaltenNr = (spaltenNr + 1) % 9;
+			if (spaltenNr == 0) {
+				zeilenNr = (zeilenNr + 1) % 9;
+			}
 			int wert = loesung.wert(zeilenNr, spaltenNr);
 			if (wert == 0) { // Belegte Felder überspringen
 				Set<Integer> eingeschraenkteMoeglicheWerte = helfer.eingeschraenkteMoeglicheWerte(loesung, zeilenNr, spaltenNr);
 				if (eingeschraenkteMoeglicheWerte.isEmpty()) {
-					erfolg = neuerVersuch(loesung, zugStapel);
+					erfolg = this.neuerVersuch(loesung, zugStapel); // Backtracking
 				} else {
-					naechsterZug(loesung, zugStapel, zeilenNr, spaltenNr, eingeschraenkteMoeglicheWerte);
+					this.naechsterZug(loesung, zugStapel, new Zug(zeilenNr, spaltenNr, eingeschraenkteMoeglicheWerte)); // Nächster Zug
 				}
 			}
-			// Nächste Zelle ermitteln
-			if (erfolg) {
-				spaltenNr = (spaltenNr + 1) % 9;
-				if (spaltenNr == 0) {
-					zeilenNr = (zeilenNr + 1) % 9;
-				}
-			}			
 		}
 		
 		// Abschlussbehandlung
@@ -71,9 +69,11 @@ public class LoeserTiefensucheImpl implements Loeser {
 	/**
 	 * Nimmt Züge zurück, bis ein alternativer Zug gefunden wird, der dann ausgeführt wird.
 	 * 
+	 * @param loesung die bisher konstruierte Teillösung
+	 * @param zugStapel
 	 * @return true, falls ein neuer Zug gefunden werden konnte, false sonst
 	 */
-	protected boolean neuerVersuch(Spielfeld loesung, Stack<Zug> zugStapel) {
+	private boolean neuerVersuch(Spielfeld loesung, Stack<Zug> zugStapel) {
 		while (!zugStapel.empty()) {
 			Zug zug = zugStapel.pop();
 			// Zug zurücknehmen
@@ -85,7 +85,7 @@ public class LoeserTiefensucheImpl implements Loeser {
 			}
 			if (!zug.alternativeWerte.isEmpty()) {
 				// Alternativen Zug ausführen
-				naechsterZug(loesung, zugStapel, zug.zeilenNr, zug.spaltenNr, zug.alternativeWerte);
+				naechsterZug(loesung, zugStapel, zug);
 				return true;
 			}
 		}
@@ -93,39 +93,29 @@ public class LoeserTiefensucheImpl implements Loeser {
 	}
 	
 	/**
-	 * Belegt die Zelle mit einem Element aus der Menge möglicher Werte.
-	 * Vorbedingung: Die Menge der möglichen Werte ist nicht leer.
+	 * Führt den nächsten Zug aus. 
+	 * Vorbedingungen:
+	 * - Zeile, Spalte und alternative Werte des Zugs sind bereits fixiert.
+	 * - Die Menge der alternativen Werte ist nicht leer.
+	 * Nachbedingung:
+	 * - Der Zug ist mit einem der alternativen Werte ausgeführt worden.
 	 */
-	protected void naechsterZug(Spielfeld loesung, Stack<Zug> zugStapel, int zeilenNr, int spaltenNr, Set<Integer> moeglicheWerte) {
-		Iterator<Integer> iterator = moeglicheWerte.iterator();
+	/**
+	 * @param loesung die bisher konstruierte Teillösung
+	 * @param zugStapel der Stapel der bisher ausgeführten Züge
+	 * @param zug der auszuführende Zug (bis auf den zu setzenden Wert bereits fixiert)
+	 */
+	private void naechsterZug(Spielfeld loesung, Stack<Zug> zugStapel, Zug zug) {
+		Iterator<Integer> iterator = zug.alternativeWerte.iterator();
 		int neuerWert = iterator.next();
-		moeglicheWerte.remove(neuerWert);
 		try {
-			loesung.setze(zeilenNr, spaltenNr, neuerWert);
+			loesung.setze(zug.zeilenNr, zug.spaltenNr, neuerWert);
 		} catch (FalscherWert e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Zug zug = new Zug(zeilenNr, spaltenNr, neuerWert, moeglicheWerte);
+		zug.alternativeWerte.remove(neuerWert);
 		zugStapel.push(zug);
 	}
-	
-	/**
-	 * Bestimmt das Minimum einer nichtleeren Menge ganzer Zahlen
-	 * 
-	 * @param menge die nichtleere Menge ganzer Zahlen
-	 * @return die kleinste Zahl in dieser Menge
-	 */
-	protected int minimum(Set<Integer> menge) {
-		Iterator<Integer> iterator = menge.iterator();
-		int minimum = iterator.next();
-		while (iterator.hasNext()) {
-			int naechsteZahl = iterator.next();
-			if (naechsteZahl < minimum)
-				minimum = naechsteZahl;
-		}
-		return minimum;
-	}
-
 
 }

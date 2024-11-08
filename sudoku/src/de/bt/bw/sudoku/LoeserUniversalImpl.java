@@ -13,7 +13,7 @@ import java.util.Stack;
  */
 public class LoeserUniversalImpl implements Loeser {
 
-	protected class Zug {
+	private class Zug {
 		int zeilenNr, spaltenNr, wert;
 		boolean eindeutig;
 		Zug(int zeilenNr, int spaltenNr, int wert, boolean eindeutig) {
@@ -24,9 +24,6 @@ public class LoeserUniversalImpl implements Loeser {
 		}
 	}
 	
-	protected Stack<Zug> zugStapel;
-	
-	protected Spielfeld loesung;
 	
 	/**
 	 * Findet eine Lösung durch Tiefensuche. Dazu wird ein
@@ -47,30 +44,31 @@ public class LoeserUniversalImpl implements Loeser {
 	 */
 	@Override
 	public Spielfeld loese(Spielfeld raetsel) {
+		if (raetsel == null) return null;
 		// Initialisierung
 		SpielfeldHelfer helfer = new SpielfeldHelferImpl();
-		loesung = helfer.kopiere(raetsel);
-		zugStapel = new Stack<Zug>();
-		boolean weiter = true;
-		boolean erfolg = false;
+		Spielfeld loesung = helfer.kopiere(raetsel);
+		Stack<Zug> zugStapel = new Stack<Zug>(); // Stapel der bereits ausgeführten Züge
+		boolean weiter = true; // Soll weiter gesucht werden?
+		boolean erfolg = false; // Wurde bereits eine Lösung gefunden?
 		while (weiter) {
 			// 1. Phase: Eindeutig bestimmte Werte setzen
-			boolean wertGesetzt;
-			boolean konsistent = true;
+			boolean wertGesetzt; // Wurde in der Spielfeldschleife ein Wert gesetzt?
+			boolean konsistent = true; // Ist die Teillösung noch konsistent?
 			do {
 				wertGesetzt = false;
-				MatrixSchleife:
+				SpielfeldSchleife:
 				for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
 					for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
 						// 1. Fall: Wert ist schon gesetzt => überspringen
 						int wert = loesung.wert(zeilenNr, spaltenNr);
 						if (wert != 0)
 							continue;
-						// 2. Fall: Wertemenge leer => Schleife abbrechen
+						// 2. Fall: Wertemenge leer => Spielfeldschleife abbrechen
 						Set<Integer> eingeschraenkteMoeglicheWerte = helfer.eingeschraenkteMoeglicheWerte(loesung, zeilenNr, spaltenNr);
 						if (eingeschraenkteMoeglicheWerte.isEmpty()) {
 							konsistent = false;
-							break MatrixSchleife;
+							break SpielfeldSchleife;
 						}
 						// 3. Fall: Wertemenge einelementig => eindeutig bestimmten Wert setzen
 						if (eingeschraenkteMoeglicheWerte.size() == 1) {
@@ -82,21 +80,21 @@ public class LoeserUniversalImpl implements Loeser {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
-							zugStapel.push(new Zug(zeilenNr, spaltenNr, wert, true));
+							zugStapel.push(new Zug(zeilenNr, spaltenNr, wert, true)); // Zug auf dem Stapel ablegen
 							wertGesetzt = true;
 						}
 						// Bei nicht eindeutigem Wert nichts tun
 					} 
 			} while (wertGesetzt && konsistent);
-			// Die do-Schleife terminiert, wenn in der Matrixschleife kein Wert gesetzt werden konnte
+			// Die do-Schleife terminiert, wenn in der Spielfeldschleife kein Wert gesetzt werden konnte
 			// oder eine Inkonsistenz gefunden wurde
 			if (helfer.loesungVollstaendig(loesung)) { // Eine Lösung wurde gefunden
 				erfolg = true;
 				weiter = false;
 			} else if (!konsistent) { // Sackgasse 
-				weiter = neuerVersuch(); // Backtracking, falls möglich
+				weiter = neuerVersuch(loesung, zugStapel); // Backtracking, falls möglich
 			} else { // Lösung konnte nicht eindeutig vervollständigt werden
-				rate(); // Es wird ein Wert geraten
+				rate(loesung, zugStapel); // Es wird ein Wert geraten
 				weiter = true; // Redundant, nur zum besseren Verständnis
 			}
 		}
@@ -109,9 +107,11 @@ public class LoeserUniversalImpl implements Loeser {
 	/**
 	 * Nimmt Züge zurück, bis ein alternativer Zug gefunden wird, der dann ausgeführt wird.
 	 * 
-	 * @return true, falls ein neuer Zug gefunden werden konnte, false sonst
+	 * @param loesung die bisher konstruierte Teillösung
+	 * @param zugStapel der Stapel bisher ausgeführter Züge
+	 * @return true, falls ein neuer Zug gefunden und ausgeführt werden konnte, false sonst
 	 */
-	protected boolean neuerVersuch() {
+	private boolean neuerVersuch(Spielfeld loesung, Stack<Zug> zugStapel) {
 		boolean erfolg = false;
 		while (!(erfolg || zugStapel.empty())) {
 			try {
@@ -144,15 +144,18 @@ public class LoeserUniversalImpl implements Loeser {
 		}
 		return erfolg;
 	}
-	
+
 	/**
 	 * Vorbedingung: Lösung ist unvollständig, und es gibt keinen eindeutig bestimmbaren Wert.
 	 * Dann wird ein Wert geraten. Dazu wird eine Zelle mit einer minimalen Menge möglicher 
 	 * Werte gesucht, um die Wahrscheinlichkeit einer Fehlentscheidung zu minimieren.
 	 * Es wird der kleinste mögliche Wert gesetzt; beim Backtracking werden die möglichen Werte
 	 * in aufsteigender Folge probiert.
+	 * 
+	 * @param loesung die bisher konstruierte Teillösung
+	 * @param zugStapel Stapel der bisher ausgeführten Züge
 	 */
-	protected void rate() {
+	private void rate(Spielfeld loesung, Stack<Zug> zugStapel) {
 		// Bestimme Zelle mit minimaler Zahl möglicher Werte
 		int minZeilenNr = -1, minSpaltenNr = -1, minKardinalitaet = 10;
 		// Da mindestens eine Zelle unbelegt ist, werden die Werte obiger Variablen
@@ -185,7 +188,7 @@ public class LoeserUniversalImpl implements Loeser {
 	 * @param menge die nichtleere Menge ganzer Zahlen
 	 * @return die kleinste Zahl in dieser Menge
 	 */
-	protected int minimum(Set<Integer> menge) {
+	private int minimum(Set<Integer> menge) {
 		Iterator<Integer> iterator = menge.iterator();
 		int minimum = iterator.next();
 		while (iterator.hasNext()) {

@@ -14,18 +14,17 @@ import java.util.Stack;
  */
 public class LoeserTiefensucheOptImpl implements Loeser {
 	
-	protected class Zug implements Comparable<Zug> {
-		public int zeilenNr, spaltenNr, wert;
+	private class Zug implements Comparable<Zug> {
+		public int zeilenNr, spaltenNr;
 		public Set<Integer> alternativeWerte; // Werte, die noch nicht ausprobiert wurden
-		public Zug(int zeilenNr, int spaltenNr, int wert, Set<Integer> alternativeWerte) {
+		public Zug(int zeilenNr, int spaltenNr, Set<Integer> alternativeWerte) {
 			this.zeilenNr = zeilenNr;
 			this.spaltenNr = spaltenNr;
-			this.wert = wert;
 			this.alternativeWerte = alternativeWerte;
 		}
-		public int compareTo(Zug andere) {
+		public int compareTo(Zug anderer) {
 			int meineKardinalitaet = this.alternativeWerte.size();
-			int andereKardinalitaet = andere.alternativeWerte.size();
+			int andereKardinalitaet = anderer.alternativeWerte.size();
 			if (meineKardinalitaet < andereKardinalitaet)
 				return -1;
 			else if (meineKardinalitaet > andereKardinalitaet)
@@ -41,7 +40,7 @@ public class LoeserTiefensucheOptImpl implements Loeser {
 	 * @param menge die nichtleere Menge
 	 * @return das Minimum in dieser Menge
 	 */
-	protected <T extends Comparable<T>> T minimum(Set<T> menge) {
+	private <T extends Comparable<T>> T minimum(Set<T> menge) {
 		Iterator<T> iterator = menge.iterator();
 		T minimum = iterator.next();
 		while (iterator.hasNext()) {
@@ -58,24 +57,23 @@ public class LoeserTiefensucheOptImpl implements Loeser {
 	 * 
 	 * @param loesung bisherige Lösung
 	 * @param zugStapel Stapel der Züge
-	 * @param arbeitsmenge noch nicht bearbeitete Züge
+	 * @param arbeitsMenge noch nicht bearbeitete Züge
 	 * @return true, falls ein neuer Zug gefunden werden konnte, false sonst
 	 */
-	protected boolean neuerVersuch(Spielfeld loesung, Stack<Zug> zugStapel, Set<Zug> arbeitsmenge) {
+	private boolean neuerVersuch(Spielfeld loesung, Stack<Zug> zugStapel, Set<Zug> arbeitsMenge) {
 		while (!zugStapel.empty()) {
 			Zug zug = zugStapel.pop();
-			arbeitsmenge.add(zug);
+			arbeitsMenge.add(zug);
 			// Zug zurücknehmen
 			try {
 				loesung.setze(zug.zeilenNr, zug.spaltenNr, 0);
-				zug.wert = 0;
 			} catch (FalscherWert e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			if (!zug.alternativeWerte.isEmpty()) {
 				// Alternativen Zug ausführen
-				this.naechsterZug(loesung, zugStapel, arbeitsmenge, zug);
+				this.naechsterZug(loesung, zugStapel, arbeitsMenge, zug);
 				return true;
 			}
 		}
@@ -83,15 +81,16 @@ public class LoeserTiefensucheOptImpl implements Loeser {
 	}
 
 	/**
-	 * Belegt die Zelle mit einem Element aus der Menge möglicher Werte.
-	 * Vorbedingung: Die Menge der möglichen Werte ist nicht leer.
+	 * Belegt die Zelle mit einem Element aus der Menge alternativer Werte.
+	 * Vorbedingung: Die Menge der alternativen Werte ist nicht leer.
+	 * 
 	 * @param loesung bisherige Lösung
 	 * @param zugStapel Stapel der Züge, auf dem der auszuführende Zug abgelegt wird
-	 * @param arbeitsmenge noch nicht bearbeitete Züge
+	 * @param arbeitsMenge noch nicht bearbeitete Züge
 	 * @param zug der auszuführende Zug aus der Arbeitsmenge
 	 */
-	protected void naechsterZug(Spielfeld loesung, Stack<Zug> zugStapel, Set<Zug> arbeitsmenge, Zug zug) {
-		arbeitsmenge.remove(zug);
+	private void naechsterZug(Spielfeld loesung, Stack<Zug> zugStapel, Set<Zug> arbeitsMenge, Zug zug) {
+		arbeitsMenge.remove(zug);
 		Iterator<Integer> iterator = zug.alternativeWerte.iterator();
 		int neuerWert = iterator.next();
 		try {
@@ -100,7 +99,6 @@ public class LoeserTiefensucheOptImpl implements Loeser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		zug.wert = neuerWert;
 		zug.alternativeWerte.remove(neuerWert);
 		zugStapel.push(zug);
 	}
@@ -115,11 +113,12 @@ public class LoeserTiefensucheOptImpl implements Loeser {
 	 */
 	@Override
 	public Spielfeld loese(Spielfeld raetsel) {
+		if (raetsel == null) return null;
 		// Initialisierung
 		SpielfeldHelfer helfer = new SpielfeldHelferImpl();
 		Spielfeld loesung = helfer.kopiere(raetsel);
 		Stack<Zug> zugStapel = new Stack<Zug>();
-		Set<Zug> arbeitsmenge = new HashSet<Zug>(); // Enthält nur ungesetzte Zellen mit nichtleerer Menge alternativer Werte
+		Set<Zug> arbeitsMenge = new HashSet<Zug>(); // Enthält nur ungesetzte Zellen mit nichtleerer Menge alternativer Werte
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++) {
 			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
 				if (loesung.wert(zeilenNr, spaltenNr) == 0) {
@@ -129,7 +128,7 @@ public class LoeserTiefensucheOptImpl implements Loeser {
 						// Fehler im Rätsel
 						return null;
 					} else {
-						arbeitsmenge.add(new Zug(zeilenNr, spaltenNr, 0, alternativeWerte));
+						arbeitsMenge.add(new Zug(zeilenNr, spaltenNr, alternativeWerte));
 					}					
 				}
 			}
@@ -137,18 +136,20 @@ public class LoeserTiefensucheOptImpl implements Loeser {
 		boolean erfolg = true; // Wird auf false gesetzt, wenn der Suchraum erschöpft ist
 		
 		// Abarbeiten der Arbeitsmenge
-		while(erfolg && !arbeitsmenge.isEmpty()) {
-			Zug naechsterZug = minimum(arbeitsmenge);
+		while (erfolg && !arbeitsMenge.isEmpty()) {
+			// Wähle den Zug mit einer minimalen Zahl von Alternativen,
+			// um das Backtracking zu begrenzen
+			Zug naechsterZug = minimum(arbeitsMenge);
 			if (naechsterZug.alternativeWerte.isEmpty()) {
 				// Backtracking
-				erfolg = this.neuerVersuch(loesung, zugStapel, arbeitsmenge);
+				erfolg = this.neuerVersuch(loesung, zugStapel, arbeitsMenge);
 			} else {
 				// Zug ausführen
-				this.naechsterZug(loesung, zugStapel, arbeitsmenge, naechsterZug);
+				this.naechsterZug(loesung, zugStapel, arbeitsMenge, naechsterZug);
 			}
 			// Alternative Werte in der gesamten Arbeitsmenge neu berechnen
 			if (erfolg) {
-				Iterator<Zug> iterator = arbeitsmenge.iterator();
+				Iterator<Zug> iterator = arbeitsMenge.iterator();
 				while (iterator.hasNext()) {
 					Zug zug = iterator.next();
 					zug.alternativeWerte = helfer.eingeschraenkteMoeglicheWerte(loesung, zug.zeilenNr, zug.spaltenNr);
