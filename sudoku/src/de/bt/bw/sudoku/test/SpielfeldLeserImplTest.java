@@ -26,13 +26,16 @@ class SpielfeldLeserImplTest {
 	@Test
 	void testLiesSpielfeldRaetsel_83_1() {
 		SpielfeldLeser spielfeldLeser = new SpielfeldLeserImpl();
-		Spielfeld spielfeld;
+		Spielfeld spielfeld1;
 		try {
-			spielfeld = spielfeldLeser.lies("raetsel_83_1.txt");
+			spielfeld1 = spielfeldLeser.lies("raetsel_83_1.txt");
 		} catch (FileNotFoundException dateiNichtGefunden) {
-			spielfeld = null;
+			spielfeld1 = null;
 		}
-		assertTrue(spielfeld != null);
+		assertTrue(spielfeld1 != null);
+		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
+		Spielfeld spielfeld2 = spielfeldHelfer.erzeugeSpielfeld(Testdaten.raetsel_83_1);
+		assertTrue(spielfeldHelfer.gleich(spielfeld1, spielfeld2));
 	}
 
 

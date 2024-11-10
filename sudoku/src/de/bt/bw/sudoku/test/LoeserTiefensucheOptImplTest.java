@@ -33,5 +33,13 @@ class LoeserTiefensucheOptImplTest {
 		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Leer)));
 	}
 	
-
+	@Test
+	void testLoeseRaetsel_83_51() {
+		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_83_51)));
+	}
+	
+	@Test
+	void testLoeseRaetsel_Golden_1() {
+		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_1)));
+	}
 }

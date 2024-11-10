@@ -13,6 +13,7 @@ import de.bt.bw.sudoku.*;
  * 
  */
 class SpielfeldHelferImplTest {
+	SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
 
 	/**
 	 * Testet, ob ein korrektes, als Matrix gegebenes Rätsel in ein
@@ -20,7 +21,6 @@ class SpielfeldHelferImplTest {
 	 */
 	@Test
 	void testErzeugeSpielfeldRaetsel_83_1() {
-		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
 		Spielfeld spielfeld = spielfeldHelfer.erzeugeSpielfeld(Testdaten.raetsel_83_1);
 		assertTrue(spielfeld != null);
 	}
@@ -31,7 +31,6 @@ class SpielfeldHelferImplTest {
 	 */
 	@Test
 	void testErzeugeSpielfeldLoesung_83_1() {
-		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
 		Spielfeld spielfeld = spielfeldHelfer.erzeugeSpielfeld(Testdaten.loesung_83_1);
 		assertTrue(spielfeld != null);
 	}
@@ -43,7 +42,6 @@ class SpielfeldHelferImplTest {
 	 */
 	@Test
 	void testGleich() {
-		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
         Spielfeld spielfeld1 = spielfeldHelfer.erzeugeSpielfeld(Testdaten.raetsel_83_1);
 		Spielfeld spielfeld2 = spielfeldHelfer.erzeugeSpielfeld(Testdaten.raetsel_83_1);
 		assertTrue(spielfeldHelfer.gleich(spielfeld1, spielfeld2));
@@ -55,7 +53,6 @@ class SpielfeldHelferImplTest {
 	 */
 	@Test
 	void testKopieren() {
-		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
 		Spielfeld spielfeld1 = spielfeldHelfer.erzeugeSpielfeld(Testdaten.raetsel_83_1);
 		Spielfeld spielfeld2 = spielfeldHelfer.kopiere(spielfeld1);
 		assertTrue(spielfeldHelfer.gleich(spielfeld1, spielfeld2));
@@ -67,7 +64,6 @@ class SpielfeldHelferImplTest {
 	 */
 	@Test
 	void testLoesungVollstaendigFalsch() {
-		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
 		Spielfeld spielfeld = spielfeldHelfer.erzeugeSpielfeld(Testdaten.raetsel_83_1);
 		assertFalse(spielfeldHelfer.loesungVollstaendig(spielfeld));
 	}
@@ -78,7 +74,6 @@ class SpielfeldHelferImplTest {
 	 */
 	@Test
 	void testLoesungVollstaendigWahr() {
-		SpielfeldHelfer spielfeldHelfer = new SpielfeldHelferImpl();
 		Spielfeld spielfeld = spielfeldHelfer.erzeugeSpielfeld(Testdaten.loesung_83_1);
 		assertTrue(spielfeldHelfer.loesungVollstaendig(spielfeld));
 	}

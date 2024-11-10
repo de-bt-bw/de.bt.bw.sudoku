@@ -62,6 +62,8 @@ public class SpielfeldHelferImpl implements SpielfeldHelfer {
 
 	@Override
 	public boolean loesungVollstaendig(Spielfeld spielfeld) {
+		if (spielfeld == null)
+			return false;
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
 			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++)
 				if (!spielfeld.belegt(zeilenNr, spaltenNr))
@@ -71,6 +73,8 @@ public class SpielfeldHelferImpl implements SpielfeldHelfer {
 
 	@Override
 	public Set<Integer> eingeschraenkteMoeglicheWerte(Spielfeld spielfeld, int zeilenNr, int spaltenNr) {
+		if (spielfeld == null)
+			return null;
 		Set<Integer> eingeschraenkteMoeglicheWerte = spielfeld.moeglicheWerte(zeilenNr, spaltenNr);
 		Iterator<Integer> iterator = eingeschraenkteMoeglicheWerte.iterator();
 		while (iterator.hasNext()) {
