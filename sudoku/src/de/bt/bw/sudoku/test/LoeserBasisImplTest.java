@@ -37,4 +37,9 @@ class LoeserBasisImplTest {
 	void testLoeseRaetsel_Golden_1() {
 		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_1)));
 	}
+	
+	@Test
+	void testLoeseRaetsel_Golden_161() {
+		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_161)));
+	}
 }
