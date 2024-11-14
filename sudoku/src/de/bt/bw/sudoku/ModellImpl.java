@@ -5,7 +5,15 @@ import java.util.ArrayList;
 /**
  * Ergänzt die Implementierung des Spielfelds um eine Implementierung der Subjekt-Schnittstelle
  */
-public class ModellImpl extends SpielfeldImpl implements Modell {
+public class ModellImpl extends SpielfeldImpl implements Modell {	
+	
+    /**
+     * Konstruktor für das Modell, stellt den initialen Spielstand her.
+     */
+    public ModellImpl()
+    {
+        // Initialisierung des Modells
+    }
 
 	/**
 	 * Ruft nach dem Setzen die Benachrichtigung auf
