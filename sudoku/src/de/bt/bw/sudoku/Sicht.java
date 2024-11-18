@@ -3,6 +3,8 @@
  */
 package de.bt.bw.sudoku;
 
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,13 +22,27 @@ public class Sicht extends JPanel implements Beobachter, ActionListener {
     private Modell modell;
     
     private static final String[] zahlen = {" ", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-    // private static final Integer[] zahlen = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     
-    // JComboBox<Integer> beispiel;
+    private static int wert(String selektion) {
+    	if (selektion.equals(" ")) 
+    		return 0;
+    	else
+    		return Integer.parseInt(selektion);
+    }
     
-    JButton laden, speichern, fertig;
+    private class Zelle extends JComboBox {
+    	final int zeilenNr, spaltenNr;
+    	int wert;
+    	Zelle(String[] zahlen, int zeilenNr, int spaltenNr, int wert) {
+    		super(zahlen);
+    		this.zeilenNr = zeilenNr;
+    		this.spaltenNr = spaltenNr;
+    		this.wert = wert;
+    		this.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 24));
+    	}
+    }
     
-    JComboBox[][] zellen;
+    Zelle[][] zellen;
     
     public Sicht(Kontrolle kontrolle, Modell modell) {
     	
@@ -36,24 +52,16 @@ public class Sicht extends JPanel implements Beobachter, ActionListener {
         modell.registriere(this);
         
         // Standard-Layout: Flow Layout
+        GridLayout layout = new GridLayout(9,9);
+        layout.setHgap(20);
+        layout.setVgap(20);
+    	this.setLayout(layout);
     	
-    	// Buttons für Kommandos
-    	laden = new JButton("Laden");
-    	laden.addActionListener(this);
-    	this.add(laden);
-    	speichern = new JButton("Speichern");
-    	speichern.addActionListener(this);
-    	this.add(speichern);
-    	fertig = new JButton("Fertig");
-    	fertig.addActionListener(this);
-    	this.add(fertig);
-        
         // Spielfeld mit Combo-Boxen darstellen
-    	// this.setLayout(new GridLayout(9,9));
-        zellen = new JComboBox[9][9];
+        zellen = new Zelle[9][9];
         for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++) 
         	for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
-        		JComboBox aktuelleZelle = new JComboBox(zahlen);
+        		Zelle aktuelleZelle = new Zelle(zahlen, zeilenNr, spaltenNr, 0);
         		zellen[zeilenNr][spaltenNr] = aktuelleZelle;
         		aktuelleZelle.addActionListener(this);
         		this.add(aktuelleZelle);        		
@@ -70,17 +78,23 @@ public class Sicht extends JPanel implements Beobachter, ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// Bisher nur Testausgaben auf der Konsole
-		if (e.getSource() instanceof JComboBox) {
+		if (e.getSource() instanceof Zelle) {
 			// Combo-Box
-			JComboBox zelle = (JComboBox)e.getSource();
+			Zelle zelle = (Zelle)e.getSource();
 			String selektion = (String)zelle.getSelectedItem();
-			System.out.println("Selektion: " + selektion);
-		} else {
-			// Buttons
-			JButton button = (JButton)e.getSource();
-			String kommando = e.getActionCommand();
-			System.out.println("Kommando: " + kommando);
-		}
+			int wert = this.wert(selektion);
+			zelle.wert = wert;
+			System.out.println("Zeile: " + zelle.zeilenNr + " Spalte: " + zelle.spaltenNr + " Wert: " + wert);
+		} 
+	}
+	
+	@Override
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		g.drawLine(1, 250, 800, 250);
+		g.drawLine(1, 508, 800, 508);
+		g.drawLine(258, 1, 258, 800);
+		g.drawLine(525, 1, 525, 800);
 	}
 
 	@Override
