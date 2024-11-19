@@ -67,6 +67,9 @@ public class Sicht extends JPanel implements Beobachter, ActionListener {
         		this.add(aktuelleZelle);        		
         	}
         
+        // Spielfeld an den Modellzustand anpassen
+        this.aktualisiere();
+        
         // Rahmen erzeugen und anzeigen
         JFrame frame = new JFrame("Sudoku");
         frame.getContentPane().add(this);
@@ -77,20 +80,26 @@ public class Sicht extends JPanel implements Beobachter, ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// Bisher nur Testausgaben auf der Konsole
+		Kommando kommando = null;
 		if (e.getSource() instanceof Zelle) {
 			// Combo-Box
 			Zelle zelle = (Zelle)e.getSource();
 			String selektion = (String)zelle.getSelectedItem();
 			int wert = this.wert(selektion);
 			zelle.wert = wert;
-			System.out.println("Zeile: " + zelle.zeilenNr + " Spalte: " + zelle.spaltenNr + " Wert: " + wert);
-		} 
+			// Ausgabe zu Testzwecken
+			System.out.println("Setzen von Zeile: " + zelle.zeilenNr + " Spalte: " + zelle.spaltenNr + " Wert: " + wert);
+			// Erzeugung des Kommandos
+			kommando = new KommandoSetzenImpl(zelle.zeilenNr, zelle.spaltenNr, zelle.wert);
+		} // Andere Kommandos fehlen noch
+		kontrolle.behandleKommando(kommando);
 	}
 	
 	@Override
 	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
+		super.paintComponent(g); // Alle Zellen neu zeichnen
+		// Horizontale und vertikale Linien zur Unterteilung
+		// in Blöcke zeichnen
 		g.drawLine(1, 250, 800, 250);
 		g.drawLine(1, 508, 800, 508);
 		g.drawLine(258, 1, 258, 800);
@@ -99,8 +108,18 @@ public class Sicht extends JPanel implements Beobachter, ActionListener {
 
 	@Override
 	public void aktualisiere() {
-		// TODO Auto-generated method stub
-
+        for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++) 
+        	for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
+        		int wert = modell.wert(zeilenNr, spaltenNr);
+        		Zelle zelle = this.zellen[zeilenNr][spaltenNr];
+        		// Achtung: Hier soll nur die Sicht aktualisiert werden
+        		// Deshalb Action Listener deregestrieren und anschließend
+        		// wieder registrieren
+        		zelle.removeActionListener(this);
+        		zelle.setSelectedIndex(wert);
+        		zelle.addActionListener(this);
+        	}
+        this.repaint();
 	}
 
 }
