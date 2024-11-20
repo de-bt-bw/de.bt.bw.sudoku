@@ -13,7 +13,7 @@ public class Init {
 	 */
 	public static void main(String[] args) {
 		Modell modell = new ModellImpl();
-        Kontrolle kontrolle = new Kontrolle(modell);
+        Kontrolle kontrolle = new KontrolleImpl(modell);
 	}
 
 }
