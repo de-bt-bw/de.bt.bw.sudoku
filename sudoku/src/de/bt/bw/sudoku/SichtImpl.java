@@ -42,6 +42,23 @@ public class SichtImpl extends JPanel implements Sicht, ActionListener {
     	}
     }
     
+    private class NachrichtenFenster extends JPanel {
+    	final String nachricht;
+    	
+    	NachrichtenFenster(String nachricht) {
+    		this.nachricht = nachricht;
+    		JFrame frame = new JFrame();
+    		frame.getContentPane().add(this);
+    		frame.setSize(600, 150);
+    		frame.setVisible(true);
+    	}
+    	
+    	public void paintComponent(Graphics g) {
+    		g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 18));
+    		g.drawString(nachricht, 50, 50);
+    	}
+    }
+    
     Zelle[][] zellen;
     
     public SichtImpl(Kontrolle kontrolle, Modell modell) {
@@ -88,13 +105,13 @@ public class SichtImpl extends JPanel implements Sicht, ActionListener {
 			int wert = this.wert(selektion);
 			zelle.wert = wert;
 			// Ausgabe zu Testzwecken
-			System.out.println("Setzen von Zeile: " + zelle.zeilenNr + " Spalte: " + zelle.spaltenNr + " Wert: " + wert);
+			// System.out.println("Setzen von Zeile: " + zelle.zeilenNr + " Spalte: " + zelle.spaltenNr + " Wert: " + wert);
 			// Erzeugung des Kommandos
 			kommando = new KommandoSetzenImpl(zelle.zeilenNr, zelle.spaltenNr, zelle.wert);
 			boolean erfolg = kontrolle.behandleKommando(kommando);
 			if (!erfolg) {
-				// Fehlermeldung, erst einmal provisorisch auf der Konsole
-				System.out.println("Der Wert " + zelle.wert + " kann in Zeile " + zelle.zeilenNr + " und Spalte " + zelle.spaltenNr + " nicht gesetzt werden");
+				String nachricht = "Der Wert " + zelle.wert + " kann in Zeile " + zelle.zeilenNr + " und Spalte " + zelle.spaltenNr + " nicht gesetzt werden";
+				NachrichtenFenster nachrichtenFenster = new NachrichtenFenster(nachricht);
 			}
 		} // Andere Kommandos fehlen noch
 	}
