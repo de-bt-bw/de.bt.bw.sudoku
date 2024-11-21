@@ -42,4 +42,10 @@ class LoeserBasisImplTest {
 	void testLoeseRaetsel_Golden_161() {
 		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_161)));
 	}
+	
+	@Test
+	void testLoeseRaetsel_Golden_309() {
+		assertTrue(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_309) == null); // Vom Basislöser nicht lösbar
+	}
+
 }
