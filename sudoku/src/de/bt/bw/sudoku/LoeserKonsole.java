@@ -32,10 +32,12 @@ public class LoeserKonsole {
 			raetsel = spielfeldLeser.lies(raetselDatei);
 		} catch (FileNotFoundException e) {
 			System.out.println("Datei " + raetselDatei + " nicht gefunden");
+			scanner.close();
 			return;
 		}
 		if (raetsel == null) {
 			System.out.println("Rätsel falsch");
+			scanner.close();
 			return;
 		}
 		
@@ -54,13 +56,14 @@ public class LoeserKonsole {
 			case 2 -> loeser = new LoeserUniversalImpl();
 			case 3 -> loeser = new LoeserTiefensucheImpl();
 			case 4 -> loeser = new LoeserTiefensucheOptImpl();
-			default -> {System.out.println("Falsche Zahl"); return;}
+			default -> {System.out.println("Falsche Zahl"); scanner.close(); return;}
 		}
 		
 		// Löser aufrufen
 		Spielfeld loesung = loeser.loese(raetsel);
 		if (loesung == null) {
 			System.out.println("Das Rätsel konnte vom Löser nicht gelöst werden");
+			scanner.close();
 			return;
 		} else {
 			System.out.println("Der Löser hat das Rätsel gelöst");
@@ -76,6 +79,7 @@ public class LoeserKonsole {
 			System.out.println("Die Lösung konnte nicht in die Datei " + loesungsDatei + " geschrieben werden");
 		}
 		System.out.println("Die Lösung wurde in die Datei " + loesungsDatei + " geschrieben");
+		scanner.close();
 	}
 
 }
