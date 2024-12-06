@@ -26,12 +26,19 @@ public class KontrolleImpl implements Kontrolle {
 	@Override
 	public boolean behandleKommando(Kommando kommando) {
     	if (kommando instanceof KommandoSetzen) {
-		KommandoSetzen kommandoSetzen = (KommandoSetzen) kommando;
-		int zeilenNr = kommandoSetzen.gibZeilenNr();
-		int spaltenNr = kommandoSetzen.gibSpaltenNr();
-		int wert = kommandoSetzen.gibWert();
+    		return this.behandleSetzen((KommandoSetzen) kommando);
+    	} else if (kommando instanceof KommandoBeenden) {
+    		return this.behandleBeenden((KommandoBeenden) kommando);
+    	}
+    	return true;
+	}
+	
+	private boolean behandleSetzen(KommandoSetzen kommando) {
+		int zeilenNr = kommando.gibZeilenNr();
+		int spaltenNr = kommando.gibSpaltenNr();
+		int wert = kommando.gibWert();
 		int alterWert = modell.wert(zeilenNr, spaltenNr);
-			try {
+		try {
 			modell.setze(zeilenNr, spaltenNr, wert);
 		} catch (FalscherWert e) {
 			// Alten Wert nochmals setzen, um Aktualisierung der Sicht zu erzwingen
@@ -42,11 +49,12 @@ public class KontrolleImpl implements Kontrolle {
 				e1.printStackTrace();
 			}
 			return false;
-			// Testausgabe
-			// System.out.println("Der Wert " + wert + " kann in Zeile " + zeilenNr + " und Spalte " + spaltenNr + " nicht gesetzt werden");
 		}
-
+		return true;
 	}
-	return true;
+	
+	private boolean behandleBeenden(KommandoBeenden kommando) {
+		System.exit(0);
+		return true; // Code nicht erreichbar, aber notwendig für Compiler
 	}
 }
