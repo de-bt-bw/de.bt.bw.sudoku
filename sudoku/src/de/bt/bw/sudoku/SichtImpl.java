@@ -3,6 +3,7 @@
  */
 package de.bt.bw.sudoku;
 
+import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -10,6 +11,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -26,6 +28,8 @@ public class SichtImpl implements Sicht {
     private Rahmen rahmen;
     private Inhaltsflaeche inhaltsflaeche;
 	private MenueZeile menueZeile;
+	private JLabel statusZeile;
+	private static final Font standardFont = new Font(Font.SANS_SERIF, Font.PLAIN, 18);
         
     public SichtImpl(Kontrolle kontrolle, Modell modell) {
     	
@@ -49,7 +53,10 @@ public class SichtImpl implements Sicht {
 			menueZeile = new MenueZeile();
 			this.setJMenuBar(menueZeile);
 			inhaltsflaeche = new Inhaltsflaeche();
-			this.getContentPane().add(inhaltsflaeche);
+			this.getContentPane().add(inhaltsflaeche, BorderLayout.CENTER);
+			statusZeile = new JLabel("Viel Spaß beim Spiel!");
+			statusZeile.setFont(standardFont);
+			this.getContentPane().add(statusZeile, BorderLayout.SOUTH);
 			this.pack();
 			this.setVisible(true);
 		}
@@ -64,6 +71,7 @@ public class SichtImpl implements Sicht {
 	        layout.setHgap(20);
 	        layout.setVgap(20);
 	    	this.setLayout(layout);
+	    	this.setFont(standardFont);
 	    	
 	        // Spielfeld mit Combo-Boxen darstellen
 	        this.zellen = new Zelle[9][9];
@@ -87,10 +95,10 @@ public class SichtImpl implements Sicht {
 			zelle.wert = wert;
 			Kommando kommando = new KommandoSetzenImpl(zelle.zeilenNr, zelle.spaltenNr, zelle.wert);
 			boolean erfolg = kontrolle.behandleKommando(kommando);
-			if (!erfolg) {
-				String nachricht = "Der Wert " + zelle.wert + " kann in Zeile " + zelle.zeilenNr + " und Spalte " + zelle.spaltenNr + " nicht gesetzt werden";
-				//NachrichtenFenster nachrichtenFenster = new NachrichtenFenster(nachricht);
-				System.out.println(nachricht); // Zu Testzwecken
+			if (erfolg) {
+				statusZeile.setText("Setzen erfolgreich!");
+			} else {
+				statusZeile.setText("Setzen fehlgeschlagen!");
 			}
 		}
 		
@@ -124,7 +132,7 @@ public class SichtImpl implements Sicht {
     		this.zeilenNr = zeilenNr;
     		this.spaltenNr = spaltenNr;
     		this.wert = wert;
-    		this.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 24));
+    		this.setFont(standardFont);
     	}
     	
         private static int wert(String selektion) {
