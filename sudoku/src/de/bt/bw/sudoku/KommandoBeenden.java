@@ -6,6 +6,6 @@ package de.bt.bw.sudoku;
 /**
  * 
  */
-public interface KommandoBeenden extends Kommando {
+public class KommandoBeenden extends Kommando {
 
 }

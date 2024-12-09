@@ -22,11 +22,11 @@ public class ModellImpl implements Modell {
         spielfeld = new SpielfeldImpl();
         spielfeldLeser = new SpielfeldLeserImpl();
         // Nur zu Testzwecken
-        try {
-			spielfeld = spielfeldLeser.lies("raetsel_83_1.txt");
-		} catch (FileNotFoundException e) {
-			System.out.println("Datei raetsel_83_1.txt konnte nicht gefunden werden.");
-		}
+//        try {
+//			spielfeld = spielfeldLeser.lies("raetsel_83_1.txt");
+//		} catch (FileNotFoundException e) {
+//			System.out.println("Datei raetsel_83_1.txt konnte nicht gefunden werden.");
+//		}
         spielfeldSchreiber = new SpielfeldSchreiberImpl();
     }
     

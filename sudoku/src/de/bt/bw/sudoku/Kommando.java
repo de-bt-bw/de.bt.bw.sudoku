@@ -4,8 +4,8 @@
 package de.bt.bw.sudoku;
 
 /**
- * Wurzel-Interface für die Hierarchie der Kommandotypen
+ * Wurzel-Klasse für die Hierarchie der Kommandotypen
  */
-public interface Kommando {
+public abstract class Kommando {
 
 }

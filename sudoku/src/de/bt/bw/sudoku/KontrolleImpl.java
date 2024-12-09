@@ -27,10 +27,26 @@ public class KontrolleImpl implements Kontrolle {
 	public boolean behandleKommando(Kommando kommando) {
     	if (kommando instanceof KommandoSetzen) {
     		return this.behandleSetzen((KommandoSetzen) kommando);
+    	} else if (kommando instanceof KommandoLaden) {
+    		return this.behandleLaden((KommandoLaden) kommando);
+    	} else if (kommando instanceof KommandoSpeichern) {
+    		return this.behandleSpeichern((KommandoSpeichern) kommando);
     	} else if (kommando instanceof KommandoBeenden) {
     		return this.behandleBeenden((KommandoBeenden) kommando);
     	}
-    	return true;
+    	return true; // Code nicht erreichbar, wenn alle Kommandotypen behandelt werden
+	}
+	
+	private boolean behandleLaden(KommandoLaden kommando) {
+		String dateiName = kommando.gibDateiName();
+		boolean erfolg = modell.laden(dateiName);
+		return erfolg;
+	}
+	
+	private boolean behandleSpeichern(KommandoSpeichern kommando) {
+		String dateiName = kommando.gibDateiName();
+		boolean erfolg = modell.speichern(dateiName);
+		return erfolg;
 	}
 	
 	private boolean behandleSetzen(KommandoSetzen kommando) {

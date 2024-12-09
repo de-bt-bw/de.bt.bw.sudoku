@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -28,8 +29,8 @@ public class SichtImpl implements Sicht {
     private Rahmen rahmen;
     private Inhaltsflaeche inhaltsflaeche;
 	private MenueZeile menueZeile;
-	private JLabel statusZeile;
 	private static final Font standardFont = new Font(Font.SANS_SERIF, Font.PLAIN, 18);
+	private String aktuellerDateiName;
         
     public SichtImpl(Kontrolle kontrolle, Modell modell) {
     	
@@ -54,9 +55,6 @@ public class SichtImpl implements Sicht {
 			this.setJMenuBar(menueZeile);
 			inhaltsflaeche = new Inhaltsflaeche();
 			this.getContentPane().add(inhaltsflaeche, BorderLayout.CENTER);
-			statusZeile = new JLabel("Viel Spaß beim Spiel!");
-			statusZeile.setFont(standardFont);
-			this.getContentPane().add(statusZeile, BorderLayout.SOUTH);
 			this.pack();
 			this.setVisible(true);
 		}
@@ -93,12 +91,11 @@ public class SichtImpl implements Sicht {
 			String selektion = (String)zelle.getSelectedItem();
 			int wert = Zelle.wert(selektion);
 			zelle.wert = wert;
-			Kommando kommando = new KommandoSetzenImpl(zelle.zeilenNr, zelle.spaltenNr, zelle.wert);
+			Kommando kommando = new KommandoSetzen(zelle.zeilenNr, zelle.spaltenNr, zelle.wert);
 			boolean erfolg = kontrolle.behandleKommando(kommando);
-			if (erfolg) {
-				statusZeile.setText("Setzen erfolgreich!");
-			} else {
-				statusZeile.setText("Setzen fehlgeschlagen!");
+			if (!erfolg) {
+				String nachricht = "Der Wert " + zelle.wert + " in Zeile " + (zelle.zeilenNr + 1) + " und Spalte " + (zelle.spaltenNr + 1) + " ist nicht erlaubt";
+				JOptionPane.showMessageDialog(rahmen, nachricht, "Falscher Wert", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		
@@ -147,13 +144,99 @@ public class SichtImpl implements Sicht {
     	public MenueZeile() {
     		JMenu dateiMenu = new JMenu("Datei");
     		this.add(dateiMenu);
-    		JMenuItem laden = new JMenuItem("Laden");
+    		JMenuItem laden = new Laden();
     		dateiMenu.add(laden);
-    		JMenuItem speichern = new JMenuItem("Speichern");
+    		JMenuItem speichern = new Speichern();
     		dateiMenu.add(speichern);
     		JMenuItem beenden = new Beenden();
-    		// beenden.addActionListener((ActionEvent e) -> {System.exit(0);});
     		dateiMenu.add(beenden);
+    	}
+    }
+    
+    private class Laden extends JMenuItem implements ActionListener {
+    	public Laden() {
+    		super("Laden");
+    		this.addActionListener(this);
+    	}
+    	
+    	public void actionPerformed(ActionEvent e) {
+    		String[] optionen = {"Speichern und Laden", "Nur Laden", "Abbrechen"};
+    		String titel = "Laden";
+    		String text = "Möchten Sie speichern und laden, nur speichern oder das Laden abbrechen?";
+    		int n = JOptionPane.showOptionDialog(rahmen, text, titel,
+    				JOptionPane.YES_NO_CANCEL_OPTION,
+    				JOptionPane.QUESTION_MESSAGE,
+    				null,
+    				optionen,
+    				optionen[2]);
+    		if (n == 0) { // Speichern und laden
+    			JOptionPane.showMessageDialog(rahmen, "Bitte wählen Sie zunächst Speichern im Menü", "Info", JOptionPane.INFORMATION_MESSAGE);
+    		} else if (n == 1) { // Nur laden
+    			String dateiName;
+    			// Code für den Dialog zum Einlesen des Dateinamens
+    			// dateiName = "raetsel_83_1.txt"; // Vorübergehend zu Testzwecken;
+    			dateiName = JOptionPane.showInputDialog(rahmen, "Geben Sie den Namen der zu ladenden Datei ein");
+    			if (dateiName != null) {
+    				Kommando kommando = new KommandoLaden(dateiName);
+    				boolean erfolg = kontrolle.behandleKommando(kommando);
+    				if (erfolg) {
+    					aktuellerDateiName = dateiName;
+    					rahmen.setTitle(dateiName);
+    				} else {
+    					text = "Laden der Datei " + dateiName + " fehlgeschlagen";
+    					titel = "Ladefehler";
+    					JOptionPane.showMessageDialog(rahmen, text, titel, JOptionPane.ERROR_MESSAGE);
+    				}
+    			}
+    		} // Keine Aktion beim Abbrechen
+    	}
+    }
+    
+    private class Speichern extends JMenuItem implements ActionListener {
+    	public Speichern() {
+    		super("Speichern");
+    		this.addActionListener(this);
+    	}
+    	
+    	public void actionPerformed(ActionEvent e) {
+    		String[] optionen = {"Speichern", "Speichern unter", "Abbrechen"};
+    		String titel = "Speichern";
+    		String text = "Möchten Sie in der aktuellen Datei speichern,\n unter einer anderen Datei speichern oder abbrechen?";
+    		int n = JOptionPane.showOptionDialog(rahmen, text, titel,
+    				JOptionPane.YES_NO_CANCEL_OPTION,
+    				JOptionPane.QUESTION_MESSAGE,
+    				null,
+    				optionen,
+    				optionen[2]);
+    		String dateiName = null;
+    		boolean speichern = false;
+    		if (n == 0) { // In der aktuellen Datei speichern
+    			if (aktuellerDateiName == null) {
+    				text = "Es wurde noch keine Datei geladen";
+    				titel = "Speicherfehler";
+    				JOptionPane.showMessageDialog(rahmen, text, titel, JOptionPane.ERROR_MESSAGE);
+    			} else {
+    				dateiName = aktuellerDateiName;
+    				speichern = true;
+    			}
+    		} else if (n == 1) { // Unter einer (möglicherweise) anderen Datei speichern
+    			dateiName = JOptionPane.showInputDialog(rahmen, "Geben Sie den Namen der zu speichernden Datei ein");
+    			if (dateiName != null) {
+    				speichern = true;
+    			}
+    		}
+    		if (speichern) {
+    			Kommando kommando = new KommandoSpeichern(dateiName);
+				boolean erfolg = kontrolle.behandleKommando(kommando);
+				if (erfolg) {
+					aktuellerDateiName = dateiName;
+					rahmen.setTitle(dateiName);
+				} else {
+					text = "Speichern der Datei " + dateiName + " fehlgeschlagen";
+					titel = "Speicherfehler";
+					JOptionPane.showMessageDialog(rahmen, text, titel, JOptionPane.ERROR_MESSAGE);
+				}
+    		}
     	}
     }
     
@@ -164,9 +247,23 @@ public class SichtImpl implements Sicht {
     	}
     	
     	public void actionPerformed(ActionEvent e) {
-    		Kommando kommando = new KommandoBeendenImpl();
-    		boolean erfolg = kontrolle.behandleKommando(kommando);
-    		// Beenden ist immer erfolgreich
+    		String[] optionen = {"Speichern und Beenden", "Nur beenden", "Abbrechen"};
+    		String titel = "Beenden";
+    		String text = "Möchten Sie speichern und beenden, nur beenden oder das Beenden abbrechen?";
+    		int n = JOptionPane.showOptionDialog(rahmen, text, titel,
+    				JOptionPane.YES_NO_CANCEL_OPTION,
+    				JOptionPane.QUESTION_MESSAGE,
+    				null,
+    				optionen,
+    				optionen[2]);
+    		if (n == 0) { // Speichern und beenden
+    			JOptionPane.showMessageDialog(rahmen, "Bitte wählen Sie zunächst Speichern im Menü", "Info", JOptionPane.INFORMATION_MESSAGE);
+    		} else if (n == 1) { // Nur beenden
+        		Kommando kommando = new KommandoBeenden();
+    			boolean erfolg = kontrolle.behandleKommando(kommando);
+        		// Beenden ist immer erfolgreich
+    		} // Keine Aktion beim Abbrechen
+    		
     	}
     }
 
