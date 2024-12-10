@@ -31,9 +31,11 @@ public class KontrolleImpl implements Kontrolle {
     		return this.behandleLaden((KommandoLaden) kommando);
     	} else if (kommando instanceof KommandoSpeichern) {
     		return this.behandleSpeichern((KommandoSpeichern) kommando);
+    	} else if (kommando instanceof KommandoLoesen) {
+    		return this.behandleLoesen((KommandoLoesen) kommando);
     	} else if (kommando instanceof KommandoBeenden) {
     		return this.behandleBeenden((KommandoBeenden) kommando);
-    	}
+    	} 
     	return true; // Code nicht erreichbar, wenn alle Kommandotypen behandelt werden
 	}
 	
@@ -69,6 +71,10 @@ public class KontrolleImpl implements Kontrolle {
 		return true;
 	}
 	
+	private boolean behandleLoesen(KommandoLoesen kommando) {
+		return modell.loesen();
+	}
+ 	
 	private boolean behandleBeenden(KommandoBeenden kommando) {
 		System.exit(0);
 		return true; // Code nicht erreichbar, aber notwendig für Compiler

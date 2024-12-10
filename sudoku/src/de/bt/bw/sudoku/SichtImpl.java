@@ -142,6 +142,7 @@ public class SichtImpl implements Sicht {
 	
     private class MenueZeile extends JMenuBar {
     	public MenueZeile() {
+    		// Datei-Menü
     		JMenu dateiMenu = new JMenu("Datei");
     		this.add(dateiMenu);
     		JMenuItem laden = new Laden();
@@ -150,6 +151,12 @@ public class SichtImpl implements Sicht {
     		dateiMenu.add(speichern);
     		JMenuItem beenden = new Beenden();
     		dateiMenu.add(beenden);
+    		
+    		// KI-Menü
+    		JMenu kiMenu = new JMenu("KI");
+    		this.add(kiMenu);
+    		JMenuItem loesen = new Loesen();
+    		kiMenu.add(loesen);
     	}
     }
     
@@ -236,6 +243,38 @@ public class SichtImpl implements Sicht {
 					titel = "Speicherfehler";
 					JOptionPane.showMessageDialog(rahmen, text, titel, JOptionPane.ERROR_MESSAGE);
 				}
+    		}
+    	}
+    }
+    
+    private class Loesen extends JMenuItem implements ActionListener {
+    	public Loesen() {
+    		super("Lösen");
+    		this.addActionListener(this);
+    	}
+    	
+    	public void actionPerformed(ActionEvent e) {
+    		String[] optionen = {"Automatisch lösen", "Abbrechen"};
+    		String titel = "Lösen";
+    		String text = "Möchten Sie das Rätsel vollautomatisch lösen oder das Lösen abbrechen?";
+    		int n = JOptionPane.showOptionDialog(rahmen, text, titel,
+    				JOptionPane.YES_NO_OPTION,
+    				JOptionPane.QUESTION_MESSAGE,
+    				null,
+    				optionen,
+    				optionen[1]);
+    		if (n == 0) { // Automatisch lösen
+    			Kommando kommando = new KommandoLoesen();
+    			boolean erfolg = kontrolle.behandleKommando(kommando);
+    			if (erfolg) {
+    				titel = "Erfolg";
+    				text = "Das Rätsel wurde erfolgreich gelöst";
+    				JOptionPane.showMessageDialog(rahmen, text, titel, JOptionPane.INFORMATION_MESSAGE);
+    			} else {
+    				titel = "Misserfolg";
+    				text = "Das Rätsel konnte nicht gelöst werden\n Möglicherweise war das Spielfeld inkonsistent";
+    				JOptionPane.showMessageDialog(rahmen, text, titel, JOptionPane.ERROR_MESSAGE);
+    			}
     		}
     	}
     }

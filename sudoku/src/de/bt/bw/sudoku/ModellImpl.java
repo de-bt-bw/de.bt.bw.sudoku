@@ -21,12 +21,6 @@ public class ModellImpl implements Modell {
     {
         spielfeld = new SpielfeldImpl();
         spielfeldLeser = new SpielfeldLeserImpl();
-        // Nur zu Testzwecken
-//        try {
-//			spielfeld = spielfeldLeser.lies("raetsel_83_1.txt");
-//		} catch (FileNotFoundException e) {
-//			System.out.println("Datei raetsel_83_1.txt konnte nicht gefunden werden.");
-//		}
         spielfeldSchreiber = new SpielfeldSchreiberImpl();
     }
     
@@ -67,6 +61,20 @@ public class ModellImpl implements Modell {
 			return true;
 		}
 	}
+	
+	@Override
+	public boolean loesen() {
+		Loeser loeser = new LoeserTiefensucheOptImpl();
+		Spielfeld loesung = loeser.loese(spielfeld);
+		if (loesung == null) {
+			return false;
+		} else {
+			spielfeld = loesung;
+			this.benachrichtige();
+			return true;
+		}		
+	}
+
 
 	@Override
 	public boolean speichern(String dateiName) {
@@ -94,6 +102,7 @@ public class ModellImpl implements Modell {
 	public void benachrichtige() {
 		for (Beobachter beobachter : alleBeobachter) beobachter.aktualisiere();
 	}
+
 
 
 }

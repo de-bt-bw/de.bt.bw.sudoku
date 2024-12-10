@@ -27,4 +27,11 @@ public interface Modell extends Spielfeld, Subjekt {
 	 * @return true, falls das Speichern erfolgreich war, false sonst
 	 */
 	public boolean speichern(String dateiName);
+	
+	/**
+	 * Vervollständigt das aktuelle Spielfeld zu einer Lösung.
+	 * 
+	 * @return true, falls eine Lösung gefunden wurde, false sonst
+	 */
+	public boolean loesen();
 }
