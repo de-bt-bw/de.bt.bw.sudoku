@@ -4,14 +4,15 @@
 package de.bt.bw.sudoku;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -64,7 +65,7 @@ public class SichtImpl implements Sicht {
 	    private Zelle[][] zellen;
 
 		public Inhaltsflaeche() {
-	        // Standard-Layout: Flow Layout
+			this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 	        GridLayout layout = new GridLayout(9,9);
 	        layout.setHgap(20);
 	        layout.setVgap(20);
@@ -78,9 +79,8 @@ public class SichtImpl implements Sicht {
 	        		Zelle aktuelleZelle = new Zelle(zeilenNr, spaltenNr, 0);
 	        		zellen[zeilenNr][spaltenNr] = aktuelleZelle;
 	        		aktuelleZelle.addActionListener(this);
-	        		this.add(aktuelleZelle);        		
-	        	}
-	        
+	        		this.add(aktuelleZelle); 
+	        	}	        
 	        // Spielfeld an den Modellzustand anpassen
 	        this.aktualisiere();
 
@@ -130,6 +130,7 @@ public class SichtImpl implements Sicht {
     		this.spaltenNr = spaltenNr;
     		this.wert = wert;
     		this.setFont(standardFont);
+    		this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
     	}
     	
         private static int wert(String selektion) {
