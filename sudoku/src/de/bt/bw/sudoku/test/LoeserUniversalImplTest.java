@@ -51,5 +51,10 @@ class LoeserUniversalImplTest {
 	void testLoeseRaetsel_Golden_309() {
 		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_309)));
 	}
+	
+	@Test
+	void testLoeseRaetsel_Golden_311() {
+		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_311)));
+	}
 
 }
