@@ -30,7 +30,8 @@ public class SichtImpl implements Sicht {
     private Rahmen rahmen;
     private Inhaltsflaeche inhaltsflaeche;
 	private MenueZeile menueZeile;
-	private static final Font standardFont = new Font(Font.SANS_SERIF, Font.PLAIN, 18);
+	private static final Font standardFont = new Font(Font.SANS_SERIF, Font.PLAIN, 24);
+	private static final int borderWidth = 10; // Für Umrandungen
 	private String aktuellerDateiName;
         
     public SichtImpl(Kontrolle kontrolle, Modell modell) {
@@ -65,10 +66,8 @@ public class SichtImpl implements Sicht {
 	    private Zelle[][] zellen;
 
 		public Inhaltsflaeche() {
-			this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+			this.setBorder(BorderFactory.createEmptyBorder(borderWidth, borderWidth, borderWidth, borderWidth));
 	        GridLayout layout = new GridLayout(9,9);
-	        layout.setHgap(20);
-	        layout.setVgap(20);
 	    	this.setLayout(layout);
 	    	this.setFont(standardFont);
 	    	
@@ -76,10 +75,13 @@ public class SichtImpl implements Sicht {
 	        this.zellen = new Zelle[9][9];
 	        for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++) 
 	        	for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
+	        		JPanel panel = new JPanel();
+	        		panel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+	        		this.add(panel);
 	        		Zelle aktuelleZelle = new Zelle(zeilenNr, spaltenNr, 0);
 	        		zellen[zeilenNr][spaltenNr] = aktuelleZelle;
 	        		aktuelleZelle.addActionListener(this);
-	        		this.add(aktuelleZelle); 
+	        		panel.add(aktuelleZelle);
 	        	}	        
 	        // Spielfeld an den Modellzustand anpassen
 	        this.aktualisiere();
@@ -130,7 +132,7 @@ public class SichtImpl implements Sicht {
     		this.spaltenNr = spaltenNr;
     		this.wert = wert;
     		this.setFont(standardFont);
-    		this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+    		this.setBorder(BorderFactory.createEmptyBorder(borderWidth, borderWidth, borderWidth, borderWidth));
     	}
     	
         private static int wert(String selektion) {
