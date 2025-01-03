@@ -52,5 +52,10 @@ class LoeserBasisImplTest {
 	void testLoeseRaetsel_Golden_311() {
 		assertTrue(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_311) == null); // Vom Basislöser nicht lösbar
 	}
+	
+	@Test
+	void testLoeseRaetsel_Golden_316() {
+		assertTrue(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_316) == null); // Vom Basislöser nicht lösbar
+	}
 
 }
