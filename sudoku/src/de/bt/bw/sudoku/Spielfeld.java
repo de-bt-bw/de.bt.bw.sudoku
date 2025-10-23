@@ -47,7 +47,7 @@ public interface Spielfeld {
 	 * 
 	 * @param zeilenNr Zeilennummer
 	 * @param spaltenNr Spaltennummer
-	 * @return Menge der möglichen Werte
+	 * @return Menge der möglichen Werte (Kopie)
 	 */
 	Set<Integer> moeglicheWerte(int zeilenNr, int spaltenNr);
 	
