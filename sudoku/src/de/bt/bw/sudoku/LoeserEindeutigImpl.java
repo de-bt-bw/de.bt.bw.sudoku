@@ -24,7 +24,9 @@ public class LoeserEindeutigImpl implements Loeser {
 	/**
 	 * Verwaltet für jedes Feld die noch möglichen Werte. Die Menge ist leer, wenn das Feld bereits 
 	   gesetzt wurde. Sonst enthält sie eine Teilmenge der Werte, die sich durch die Spielregeln
-	   ergeben (Werte in einer Zeile, Spalte oder in einem Block müssen eindeutig sein).
+	   ergeben (Werte in einer Zeile, Spalte oder in einem Block müssen eindeutig sein). Bei der
+	   Berechnung der Teilmenge werden Cluster sowie Zeilen- oder Spalteneinschränkungen
+	   berücksichtigt.
 	 */
 	private Set<Integer>[][] moeglicheWerte; 
 	
@@ -44,6 +46,7 @@ public class LoeserEindeutigImpl implements Loeser {
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++) {
 			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
 				this.moeglicheWerte[zeilenNr][spaltenNr] = loesung.moeglicheWerte(zeilenNr, spaltenNr);
+				// Hierbei werden Cluster sowie Zeilen- oder Spalteneinschränkungen zunächst nicht berücksichtigt
 			}
 		}
 	}
@@ -72,24 +75,18 @@ public class LoeserEindeutigImpl implements Loeser {
 		int z, s; // Laufvariablen für Zeilen und Spalten
 		// Entferne Werte aus der gleichen Zeile
 		for (s = 0; s < 9; s++) {
-			if (s != spaltenNr) {
 				this.moeglicheWerte[zeilenNr][s].remove(wert);	
-			}			
 		}
 		// Entferne Werte aus der gleichen Spalte
 		for (z = 0; z < 9; z++) {
-			if (z != zeilenNr) {
 				this.moeglicheWerte[z][spaltenNr].remove(wert);
-			}
 		}
 		// Entferne Werte aus dem gleichen Block
 		int minZeile = zeilenNr - zeilenNr % 3;
 		int minSpalte = spaltenNr - spaltenNr % 3;
-		for (z = minZeile; z <= minZeile + 2; z++) {
-			for (s = minSpalte; s <= minSpalte + 2; s++) {
-				if (!(z == zeilenNr && s == spaltenNr)) {
+		for (z = minZeile; z < minZeile + 3; z++) {
+			for (s = minSpalte; s < minSpalte + 3; s++) {
 					this.moeglicheWerte[z][s].remove(wert);
-				}
 			}
 		}		
 	}
@@ -103,7 +100,7 @@ public class LoeserEindeutigImpl implements Loeser {
 	 * @return true, falls das Feld unbelegt und der Wert eindeutig ist, false sonst
 	 */
 	private boolean eindeutig(int zeilenNr, int spaltenNr) {
-		return loesung.wert(zeilenNr, spaltenNr) == 0 && this.moeglicheWerte[zeilenNr][spaltenNr].size() == 1;
+		return this.moeglicheWerte[zeilenNr][spaltenNr].size() == 1;
 	}
 	
 
@@ -116,9 +113,12 @@ public class LoeserEindeutigImpl implements Loeser {
 	 */
 	private boolean eindeutigInZeile(int zeilenNr, int wert) {
 		int haeufigkeit = 0;
-		for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
-			if (this.moeglicheWerte[zeilenNr][spaltenNr].contains(wert)) {
+		for (int s = 0; s < 9; s++) {
+			if (this.moeglicheWerte[zeilenNr][s].contains(wert)) {
 				haeufigkeit++;
+				if (haeufigkeit > 1) {
+					break;
+				}
 			}
 		}
 		return haeufigkeit == 1;
@@ -135,9 +135,14 @@ public class LoeserEindeutigImpl implements Loeser {
 	 */
 	private boolean eindeutigInSpalte(int spaltenNr, int wert) {
 		int haeufigkeit = 0;
-		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++)
-			if (this.moeglicheWerte[zeilenNr][spaltenNr].contains(wert))
+		for (int z = 0; z < 9; z++) {
+			if (this.moeglicheWerte[z][spaltenNr].contains(wert)) {
 				haeufigkeit++;
+				if (haeufigkeit > 1) {
+					break;
+				}
+			}
+		}
 		return haeufigkeit == 1;
 	}
 	
@@ -155,60 +160,63 @@ public class LoeserEindeutigImpl implements Loeser {
 		int haeufigkeit = 0;
 		int minZeile = zeilenNr - zeilenNr % 3;
 		int minSpalte = spaltenNr - spaltenNr % 3;
-		for (int z = minZeile; z <= minZeile + 2; z++)
-			for (int s = minSpalte; s <= minSpalte + 2; s++)
-				if (this.moeglicheWerte[zeilenNr][spaltenNr].contains(wert))
+		for (int z = minZeile; z < minZeile + 3; z++) {
+			for (int s = minSpalte; s < minSpalte + 3; s++) {
+				if (this.moeglicheWerte[zeilenNr][spaltenNr].contains(wert)) {
 					haeufigkeit++;
+					if (haeufigkeit > 1) {
+						break;
+					}					
+				}
+			}
+		}
 		return haeufigkeit == 1;
 	}
 
 	
 	/**
-	 * Es werden Werte gesetzt, solange dies eindeutig möglich ist. Dies wird<br>
-	 * mit Hilfe der Matrix moeglicheWerte festgestellt.<br>
-	 * Ein Wert für ein unbelegtes Feld ist eindeutig, wenn<br>
-	 * - für das Feld nur noch ein Wert möglich ist oder<br>
-	 * - der Wert eindeutig in der Zeile, Spalte oder im Block ist.<br>
+	 * Es werden Werte gesetzt, solange dies eindeutig möglich ist. Dies wird
+	 * mit Hilfe der Matrix moeglicheWerte festgestellt.
+	 * Ein Wert für ein unbelegtes Feld ist eindeutig, wenn
+	 * - für das Feld nur noch ein Wert möglich ist oder
+	 * - der Wert eindeutig in der Zeile, Spalte oder im Block ist.
 	 * 
 	 * @return true falls mindestens ein Wert gesetzt wurde
 	 */
 	private boolean werteSetzen() {
-		boolean wertInMethodeGesetzt = false; // Wurde in der Methode mindestens ein Wert gesetzt?
+		int schleifenZaehler = 0; // Zählt die Durchläufe der do-Schleife
 		boolean wertInSchleifeGesetzt; // Wurde im aktuellen Durchlauf der do-Schleife mindestens ein Wert gesetzt?
 		do {
+			schleifenZaehler++;
 			wertInSchleifeGesetzt = false;
-			for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++) {
-				for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
-					int wert = this.loesung.wert(zeilenNr, spaltenNr);
-					if (wert == 0) 	{ // Bei gesetztem Wert /= 0 ist nichts zu tun
-						int neuerWert = 0; // Variable für ggf. zu setzenden neuen Wert
-						Iterator<Integer> iterator = this.moeglicheWerte[zeilenNr][spaltenNr].iterator(); // Mindestens ein Wert möglich
-						if (this.eindeutig(zeilenNr, spaltenNr)) {
-							// Nimm den einzigen Wert, den der Iterator liefern kann
-							neuerWert = iterator.next();
+			for (int z = 0; z < 9; z++) {
+				for (int s = 0; s < 9; s++) {
+					if (!this.loesung.belegt(z, s)) { // Nichts tun, wenn das Feld schon belegt ist
+						int wert = 0; // Der ggf. zu setzende Wert
+						Iterator<Integer> iterator = this.moeglicheWerte[z][s].iterator(); // Mindestens ein Wert möglich
+						if (this.eindeutig(z, s)) { // Nimm den Wert, wenn er eindeutig ist
+							wert = iterator.next();
 						} else {
-							// Suchschleife über mögliche Werte
+							int w; // Variable für die zu betrachtenden Werte
 							while (iterator.hasNext()) {
-								wert = iterator.next();
-								if (this.eindeutigInZeile(zeilenNr, wert) ||
-										this.eindeutigInSpalte(spaltenNr, wert) ||
-										this.eindeutigInBlock(zeilenNr, spaltenNr, wert)) {
-									neuerWert = wert; // Nimm diesen Wert
+								w = iterator.next();
+								if (this.eindeutigInZeile(z, w) ||
+										this.eindeutigInSpalte(s, w) ||
+										this.eindeutigInBlock(z, s, w)) {
+									wert = w; // Wert wurde gefunden
 									break; // Suchschleife abbrechen
 								}
 							}
 						}
-						if (neuerWert != 0) {
-							// Suche erfolgreich, setze diesen Wert
-							this.setze(zeilenNr, spaltenNr, neuerWert);
-							wertInMethodeGesetzt = true;
+						if (wert != 0) { // Suche nach einem eindeutigen Wert erfolgreich
+							this.setze(z, s, wert);
 							wertInSchleifeGesetzt = true;
 						}
 					}
 				}
 			}
-		} while (wertInSchleifeGesetzt);
-		return wertInMethodeGesetzt;
+		} while (wertInSchleifeGesetzt); // Terminiert, sobald in einem Durchlauf kein Wert mehr gesetzt werden konnte
+		return schleifenZaehler > 1; // Mindestens 1 erfolgreicher Schleifendurchlauf
 	}
 	
 	/**
@@ -236,15 +244,17 @@ public class LoeserEindeutigImpl implements Loeser {
 		if (raetsel == null) 
 			return null;
 		this.init(raetsel);
-		this.werteSetzen();
+		this.werteSetzen(); // Terminiert, wenn keine Werte mehr gesetzt werden können
 		while (!helfer.loesungVollstaendig(this.loesung) && this.werteEinschraenken() && this.werteSetzen()) {
 			// Es werden nacheinander die Prüfungen und Aktionen in der Schleifenbedingung ausgeführt,
 			// bis irgendeiner dieser Schritte fehlschlägt
 		}
-		if (helfer.loesungVollstaendig(this.loesung))
+		if (helfer.loesungVollstaendig(this.loesung)) {
 			return this.loesung;
-		else
+		}
+		else {
 			return null;
+		}
 	}
 
 }
