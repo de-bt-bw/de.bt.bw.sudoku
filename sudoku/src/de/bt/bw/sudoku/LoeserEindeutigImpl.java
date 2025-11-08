@@ -42,7 +42,7 @@ public class LoeserEindeutigImpl implements Loeser {
 	private void init(Spielfeld raetsel) {
 		this.helfer = new SpielfeldHelferImpl();
 		this.loesung = helfer.kopiere(raetsel);
-		this.moeglicheWerte = (Set<Integer>[][]) new Object[9][9]; // Instantiierung nicht mit einem generischen Typ möglich
+		this.moeglicheWerte = new Set[9][9]; // Instantiierung nicht mit einem generischen Typ möglich
 		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++) {
 			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
 				this.moeglicheWerte[zeilenNr][spaltenNr] = loesung.moeglicheWerte(zeilenNr, spaltenNr);
