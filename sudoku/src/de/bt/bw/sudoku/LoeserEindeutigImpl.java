@@ -232,6 +232,68 @@ public class LoeserEindeutigImpl implements Loeser {
 	}
 	
 	/**
+	 * Prüft in der Matrix möglicher Werte für jeden Block, ob die Zeile bzw. Spalte für einen Wert eindeutig bestimmt ist,
+	 * und entfernt ggf. diesen Wert aus den anderen Zeilen bzw. Spalten dieses Blocks.
+	 * 
+	 * @return true falls mindestens eine Zeilen- oder Spalteneinschränkung erfolgt ist
+	 */
+	private boolean zeilenSpaltenEinschraenken() {
+		return this.zeilenEinschraenken() | this.spaltenEinschraenken(); // Striktes Oder verwenden!
+	}
+	
+	/**
+	 * Prüft Zeileneinschränkungen und führt sie ggf. aus
+	 * 
+	 * @return true falls mindestens eine Zeileneinschränkung in einem Feld der Matrix moeglicheWerte erfolgt ist
+	 */
+	private boolean zeilenEinschraenken() {
+		boolean eingeschraenkt = false;
+		int w, h, z, az, b, s; // Laufvariablen
+		for (w = 1; w < 10; w++) { // Für alle Werte
+			for (h = 0; h < 3; h++) { // Für alle horizontalen Blockbereiche
+				boolean[][] moeglich = new boolean[3][3]; // Zeilenindex: Zeilen z, Spaltenindex: Blöcke b
+				// Moegliche Zeilen und Blöcke aus Matrix moeglicheWerte bestimmen
+				for (z = 0; z < 3; z++) { // Für alle Zeilen des Blockbereichs
+					for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
+						for (s = 0; s < 3; s++) { // Für alle Spalten im Block
+							if (this.moeglicheWerte[z + h*3][s + b*3].contains(w)) {
+								moeglich[z][b] = true; // Wert w ist in Zeile z und Block b möglich
+							}
+						}
+					}
+				}
+				// Zeileneinschraenkungen durchführen
+				for (z = 0; z < 3; z++) { // Für alle Zeilen des Blockbereichs
+					for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
+						if (moeglich[z][b] && !moeglich[z][(b + 1) % 3] && !moeglich[z][(b + 2) % 3]) {
+							// Wert w muss in Block b in Zeile z stehen
+							// Andere Zeilen in Block b ausschließen
+							for (az = (z +1) % 3; az != z; az = (az + 1) % 3) { // Für die beiden anderen Zeilen
+								for (s = 0; s < 3; s++) { // Für alle Spalten im Block
+									if (this.moeglicheWerte[az + h*3][s + b*3].contains(w)) {
+										this.moeglicheWerte[az + h*3][s + b*3].remove(w); // Entferne w
+										eingeschraenkt = true;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return eingeschraenkt;
+	}
+	
+	/**
+	 * Prüft Spalteneinschränkungen und führt sie ggf. aus
+	 * 
+	 * @return true falls mindestens eine Spalteneinschraenkung erfolgt ist
+	 */
+	private boolean spaltenEinschraenken() {
+		return false;
+	}
+	
+	/**
 	 * Zunächst wird die Lösung mit dem Rätsel initialisiert. Dann
 	 * werden alternierend Werte gesetzt und eingeschränkt, solange
 	 * dies möglich ist.
