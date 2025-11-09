@@ -269,6 +269,7 @@ public class LoeserEindeutigImpl implements Loeser {
 							// Wert w muss in Block b in Zeile z stehen
 							// Andere Zeilen in Block b ausschließen
 							for (az = (z +1) % 3; az != z; az = (az + 1) % 3) { // Für die beiden anderen Zeilen
+								moeglich[az][b] = false; // Wert w in dieser Zeile nicht möglich
 								for (s = 0; s < 3; s++) { // Für alle Spalten im Block
 									if (this.moeglicheWerte[az + h*3][s + b*3].contains(w)) {
 										this.moeglicheWerte[az + h*3][s + b*3].remove(w); // Entferne w
