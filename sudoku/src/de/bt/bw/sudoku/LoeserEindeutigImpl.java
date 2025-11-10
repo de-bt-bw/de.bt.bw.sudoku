@@ -43,9 +43,9 @@ public class LoeserEindeutigImpl implements Loeser {
 		this.helfer = new SpielfeldHelferImpl();
 		this.loesung = helfer.kopiere(raetsel);
 		this.moeglicheWerte = new Set[9][9]; // Instantiierung nicht mit einem generischen Typ möglich
-		for (int zeilenNr = 0; zeilenNr < 9; zeilenNr++) {
-			for (int spaltenNr = 0; spaltenNr < 9; spaltenNr++) {
-				this.moeglicheWerte[zeilenNr][spaltenNr] = loesung.moeglicheWerte(zeilenNr, spaltenNr);
+		for (int z = 0; z < 9; z++) {
+			for (int s = 0; s < 9; s++) {
+				this.moeglicheWerte[z][s] = loesung.moeglicheWerte(z, s);
 				// Hierbei werden Cluster sowie Zeilen- oder Spalteneinschränkungen zunächst nicht berücksichtigt
 			}
 		}
@@ -75,18 +75,18 @@ public class LoeserEindeutigImpl implements Loeser {
 		int z, s; // Laufvariablen für Zeilen und Spalten
 		// Entferne Werte aus der gleichen Zeile
 		for (s = 0; s < 9; s++) {
-				this.moeglicheWerte[zeilenNr][s].remove(wert);	
+			this.moeglicheWerte[zeilenNr][s].remove(wert);	
 		}
 		// Entferne Werte aus der gleichen Spalte
 		for (z = 0; z < 9; z++) {
-				this.moeglicheWerte[z][spaltenNr].remove(wert);
+			this.moeglicheWerte[z][spaltenNr].remove(wert);
 		}
 		// Entferne Werte aus dem gleichen Block
 		int minZeile = zeilenNr - zeilenNr % 3;
 		int minSpalte = spaltenNr - spaltenNr % 3;
 		for (z = minZeile; z < minZeile + 3; z++) {
 			for (s = minSpalte; s < minSpalte + 3; s++) {
-					this.moeglicheWerte[z][s].remove(wert);
+				this.moeglicheWerte[z][s].remove(wert);
 			}
 		}		
 	}
@@ -228,7 +228,7 @@ public class LoeserEindeutigImpl implements Loeser {
 	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
 	 */
 	private boolean werteEinschraenken() {
-		return false;
+		return this.zeilenSpaltenEinschraenken();
 	}
 	
 	/**
@@ -253,8 +253,8 @@ public class LoeserEindeutigImpl implements Loeser {
 			for (h = 0; h < 3; h++) { // Für alle horizontalen Blockbereiche
 				boolean[][] moeglich = new boolean[3][3]; // Zeilenindex: Zeilen z, Spaltenindex: Blöcke b
 				// Moegliche Zeilen und Blöcke aus Matrix moeglicheWerte bestimmen
-				for (z = 0; z < 3; z++) { // Für alle Zeilen des Blockbereichs
-					for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
+				for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
+					for (z = 0; z < 3; z++) { // Für alle Zeilen des Blockbereichs
 						for (s = 0; s < 3; s++) { // Für alle Spalten im Block
 							if (this.moeglicheWerte[z + h*3][s + b*3].contains(w)) {
 								moeglich[z][b] = true; // Wert w ist in Zeile z und Block b möglich
@@ -263,16 +263,16 @@ public class LoeserEindeutigImpl implements Loeser {
 					}
 				}
 				// Zeileneinschraenkungen durchführen
-				for (z = 0; z < 3; z++) { // Für alle Zeilen des Blockbereichs
-					for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
+				for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
+					for (z = 0; z < 3; z++) { // Für alle Zeilen des Blockbereichs
 						if (moeglich[z][b] && !moeglich[z][(b + 1) % 3] && !moeglich[z][(b + 2) % 3]) {
 							// Wert w muss in Block b in Zeile z stehen
 							// Andere Zeilen in Block b ausschließen
 							for (az = (z +1) % 3; az != z; az = (az + 1) % 3) { // Für die beiden anderen Zeilen
 								moeglich[az][b] = false; // Wert w in dieser Zeile nicht möglich
 								for (s = 0; s < 3; s++) { // Für alle Spalten im Block
-									if (this.moeglicheWerte[az + h*3][s + b*3].contains(w)) {
-										this.moeglicheWerte[az + h*3][s + b*3].remove(w); // Entferne w
+									if (this.moeglicheWerte[az + h*3][s + b*3].remove(w)) {
+										// Entfernung von w war erfolgreich
 										eingeschraenkt = true;
 									}
 								}
