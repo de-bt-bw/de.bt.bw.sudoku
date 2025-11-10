@@ -252,9 +252,9 @@ public class LoeserEindeutigImpl implements Loeser {
 		for (w = 1; w < 10; w++) { // Für alle Werte
 			for (h = 0; h < 3; h++) { // Für alle horizontalen Blockbereiche
 				boolean[][] moeglich = new boolean[3][3]; // Zeilenindex: Zeilen z, Spaltenindex: Blöcke b
-				// Moegliche Zeilen und Blöcke aus Matrix moeglicheWerte bestimmen
+				// Mögliche Zeilen und Blöcke aus Matrix moeglicheWerte bestimmen
 				for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
-					for (z = 0; z < 3; z++) { // Für alle Zeilen des Blockbereichs
+					for (z = 0; z < 3; z++) { // Für alle Zeilen im Block
 						for (s = 0; s < 3; s++) { // Für alle Spalten im Block
 							if (this.moeglicheWerte[z + h*3][s + b*3].contains(w)) {
 								moeglich[z][b] = true; // Wert w ist in Zeile z und Block b möglich
@@ -264,13 +264,13 @@ public class LoeserEindeutigImpl implements Loeser {
 				}
 				// Zeileneinschraenkungen durchführen
 				for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
-					for (z = 0; z < 3; z++) { // Für alle Zeilen des Blockbereichs
+					for (z = 0; z < 3; z++) { // Für alle Zeilen im Block
 						if (moeglich[z][b] && !moeglich[z][(b + 1) % 3] && !moeglich[z][(b + 2) % 3]) {
 							// Wert w muss in Block b in Zeile z stehen
 							// Andere Zeilen in Block b ausschließen
 							for (az = (z +1) % 3; az != z; az = (az + 1) % 3) { // Für die beiden anderen Zeilen
 								moeglich[az][b] = false; // Wert w in dieser Zeile nicht möglich
-								for (s = 0; s < 3; s++) { // Für alle Spalten im Block
+								for (s = 0; s < 3; s++) { // Für alle Spalten in der Zeile az
 									if (this.moeglicheWerte[az + h*3][s + b*3].remove(w)) {
 										// Entfernung von w war erfolgreich
 										eingeschraenkt = true;
@@ -291,7 +291,42 @@ public class LoeserEindeutigImpl implements Loeser {
 	 * @return true falls mindestens eine Spalteneinschraenkung erfolgt ist
 	 */
 	private boolean spaltenEinschraenken() {
-		return false;
+		boolean eingeschraenkt = false;
+		int w, v, s, as, b, z; // Laufvariablen
+		for (w = 1; w < 10; w++) { // Für alle Werte
+			for (v = 0; v < 3; v++) { // Für alle vertikalen Blockbereiche
+				boolean[][] moeglich = new boolean[3][3]; // Zeilenindex: Blöcke b, Spaltenindex: Spalten s
+				// Mögliche Zeilen und Blöcke aus Matrix moeglicheWerte bestimmen
+				for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
+					for (s = 0; s < 3; s++) { // Für alle Spalten im Block
+						for (z = 0; z < 3; z++) { // Für alle Zeilen im Block
+							if (this.moeglicheWerte[z + b*3][s + v*3].contains(w)) {
+								moeglich[b][s] = true; // Wert w ist in Block b und Spalte s möglich
+							}
+						}
+					}
+				}
+				// Spalteneinschraenkungen durchführen
+				for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
+					for (s = 0; s < 3; s++) { // Für alle Spalten im Block
+						if (moeglich[b][s] && !moeglich[(b + 1) % 3][s] && !moeglich[(b + 2) % 3][s]) {
+							// Wert w muss in Block b in Spalte s stehen
+							// Andere Spalten in Block b ausschließen
+							for (as = (s +1) % 3; as != s; as = (as + 1) % 3) { // Für die beiden anderen Spalten
+								moeglich[b][as] = false; // Wert w in dieser Spalte nicht möglich
+								for (z = 0; z < 3; z++) { // Für alle Zeilen im Block
+									if (this.moeglicheWerte[z + b*3][as + v*3].remove(w)) {
+										// Entfernung von w war erfolgreich
+										eingeschraenkt = true;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return eingeschraenkt;
 	}
 	
 	/**
@@ -308,9 +343,18 @@ public class LoeserEindeutigImpl implements Loeser {
 			return null;
 		this.init(raetsel);
 		this.werteSetzen(); // Terminiert, wenn keine Werte mehr gesetzt werden können
-		while (!helfer.loesungVollstaendig(this.loesung) && this.werteEinschraenken() && this.werteSetzen()) {
-			// Es werden nacheinander die Prüfungen und Aktionen in der Schleifenbedingung ausgeführt,
-			// bis irgendeiner dieser Schritte fehlschlägt
+		boolean erfolg = true;
+		while (erfolg && !helfer.loesungVollstaendig(this.loesung)) { 
+			int zaehler = 0;
+			do {
+				erfolg = this.werteEinschraenken();
+				if (erfolg) {
+					zaehler++;
+				}
+			} while (erfolg); // Einschränkung von Werten so lange wie möglich iterieren
+			if (zaehler > 0) { // Mindestens eine Einschränkung
+				erfolg = this.werteSetzen(); // Falls kein Wert gesetzt wurde, wird die Schleife terminieren
+			}
 		}
 		if (helfer.loesungVollstaendig(this.loesung)) {
 			return this.loesung;
