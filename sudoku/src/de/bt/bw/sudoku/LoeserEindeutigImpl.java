@@ -17,6 +17,9 @@ import java.util.Set;
  *    Wert vorkommen kann. Dazu werden die horizontal benachbarten Blöcke betrachtet. Ggf. wird der
  *    Wert aus allen Zeilen gestrichen, in denen er nicht vorkommen kann.<br> 
  */
+/**
+ * 
+ */
 public class LoeserEindeutigImpl implements Loeser {
 	// In der ersten Version ist die Implementierung funktional äquivalent zur Basisimplementierung.
 	// Sie wird später um die zusätzlichen Regeln erweitert.
@@ -33,6 +36,17 @@ public class LoeserEindeutigImpl implements Loeser {
 	private Spielfeld loesung;
 	
 	private SpielfeldHelfer helfer;
+	
+	/**
+	 * Felder werden durch Zeilen- und Spaltennummern identifiziert.
+	 */
+	private class Feld {
+		int zeile, spalte;
+		Feld (int zeile, int spalte) {
+			this.zeile = zeile;
+			this.spalte = spalte;
+		}
+	}
 	
 	/**
 	 * Initialisiert die Lösung mit einer Kopie des Rätsels
@@ -220,10 +234,13 @@ public class LoeserEindeutigImpl implements Loeser {
 	}
 	
 	/**
-	 * Es werden Werte eingeschränkt, solange dies möglich ist. Dazu wird
+	 * Es werden Werte zusätzlich eingeschränkt (d.h. zusätzlich zu den 
+	 * Einschränkungen, die direkt aus den Spielregeln folgen). Diese
+	 * Einschränkungen sind notwendig, wenn die Spielregeln keine
+	 * eindeutige Fortsetzung erlauben. Dazu wird
 	 * die Matrix moeglicheWerte benutzt und eingeschränkt.
 	 * Zum Einschränken werden Regeln benutzt, die unvollständige
-	 * Informationen auswerten (z.B. Clusteranalyse).
+	 * Informationen auswerten.
 	 * 
 	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
 	 */
@@ -328,6 +345,92 @@ public class LoeserEindeutigImpl implements Loeser {
 		}
 		return eingeschraenkt;
 	}
+	
+	/**
+	 * Cluster sind Mengen von Feldern innerhalb einer Einheit (Zeile, Spalte oder Block),
+	 * die es ermöglichen, Werte zu eliminieren (entweder innerhalb des Clusters oder
+	 * in den übrigen Feldern der Einheit). Die Werte werden durch Propagationsregeln
+	 * eingeschränkt.<br> 
+	 * Für die Einschränkungen werden nur Cluster der Größen 2 und 3 betrachtet,
+	 * weil zum Lösen der Rätsel die Behandlung größerer Cluster nie erforderlich war.
+	 * 
+	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
+	 */
+	private boolean clusterEinschraenken() {
+		Feld[] einheit = new Feld[9]; // Als Array repräsentierte Einheit
+		int z, s, h, v; // Laufvariablen für Zeilen, Spalten und Blöcke
+		boolean eingeschraenkt = false;
+		for (int n = 2; n < 4; n++) { // Nur Cluster der Größen 2 und 3 betrachten
+			// Alle Zeilen behandeln
+			for (z = 0; z < 9; z++) { // Für alle Zeilen
+				for (s = 0; s < 9; s++) {
+					einheit[s] = new Feld(z, s);
+				} // Zeile in Array konvertieren
+				if (this.clusterInternEinschraenken(n, einheit) |
+						this.clusterExternEinschraenken(n, einheit)) {
+					// Beide Einschränkungen ausführen
+					// Nach internen ggf. externe Einschränkungen möglich
+					eingeschraenkt = true;
+				}
+			}
+			for (s = 0; s < 9; s++) { // Für alle Spalten
+				for (z = 0; z < 9; z++) {
+					einheit[z] = new Feld(z, s);
+				} // Spalte in Array konvertieren
+				if (this.clusterInternEinschraenken(n, einheit) |
+						this.clusterExternEinschraenken(n, einheit)) {
+					eingeschraenkt = true;
+				}
+			}
+			for (h = 0; h < 3; h++) { // Für alle horizontalen Blockbereiche
+				for (v = 0; v < 3; v++) { // Für alle vertikalen Blöcke
+					int i = 0; // Index für das Array einheit
+					for (z = 3 * h; z < 3 * (h + 1); z++) { // Für alle Zeilen des Blocks
+						for (s = 3 * v; s < 3 * (v + 1); s++) { // Für alle Spalten in der Zeile
+							einheit[i] = new Feld(z, s);
+							i++;
+						}
+					} // Block in Array konvertieren
+					if (this.clusterInternEinschraenken(n, einheit) |
+							this.clusterExternEinschraenken(n, einheit)) {
+						eingeschraenkt = true;
+					}
+				}
+			}
+		}
+		return eingeschraenkt;
+	}
+	
+	
+	/**
+	 * Behandelt interne Cluster der Größe innerhalb einer Einheit.
+	 * Eine Menge von Feldern innerhalb einer Einheit bildet ein internes Cluster der
+	 * Größe, falls auf ihnen insgesamt genau n Werte möglich sind, die auf keinem
+	 * anderen Feld der Einheit möglich sind. In diesem Fall werden alle anderen
+	 * Werte innerhalb des Clusters ausgeschlossen.
+	 * 
+	 * @param n Größe der Cluster
+	 * @param einheit Array von Feldern, die eine Einheit bilden
+	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
+	 */
+	private boolean clusterInternEinschraenken(int n, Feld[] einheit) {
+		return false;
+	}
+	
+	/**
+	 * Behandelt externe Cluster der Größe innerhalb einer Einheit.
+	 * Eine Menge von Feldern innerhalb einer Einheit bildet ein externes Cluster der
+	 * Größe n, falls auf ihnen insgesamt genau n Werte möglich sind. In diesem Fall
+	 * werden diese Werte auf allen anderen Feldern der Einheit ausgeschlossen.
+	 * 
+	 * @param n Größe der Cluster
+	 * @param einheit Array von Feldern, die eine Einheit bilden
+	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
+	 */
+	private boolean clusterExternEinschraenken(int n, Feld[] einheit) {
+		return false;
+	}
+
 	
 	/**
 	 * Zunächst wird die Lösung mit dem Rätsel initialisiert. Dann
