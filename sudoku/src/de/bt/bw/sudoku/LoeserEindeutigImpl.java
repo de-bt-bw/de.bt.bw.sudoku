@@ -357,48 +357,110 @@ public class LoeserEindeutigImpl implements Loeser {
 	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
 	 */
 	private boolean clusterEinschraenken() {
-		Feld[] einheit = new Feld[9]; // Als Array repräsentierte Einheit
+		Set<Feld> einheit;
 		int z, s, h, v; // Laufvariablen für Zeilen, Spalten und Blöcke
 		boolean eingeschraenkt = false;
 		for (int n = 2; n < 4; n++) { // Nur Cluster der Größen 2 und 3 betrachten
-			// Alle Zeilen behandeln
+			// Alle Zeilen behandeln			
 			for (z = 0; z < 9; z++) { // Für alle Zeilen
+				einheit = new HashSet<Feld>();
 				for (s = 0; s < 9; s++) {
-					einheit[s] = new Feld(z, s);
-				} // Zeile in Array konvertieren
-				if (this.clusterInternEinschraenken(n, einheit) |
-						this.clusterExternEinschraenken(n, einheit)) {
-					// Beide Einschränkungen ausführen
-					// Nach internen ggf. externe Einschränkungen möglich
+					einheit.add(new Feld(z, s));
+				} // Zeile in Menge konvertieren
+				if (this.clusterEinschraenken(n, einheit)) {
 					eingeschraenkt = true;
 				}
 			}
 			for (s = 0; s < 9; s++) { // Für alle Spalten
+				einheit = new HashSet<Feld>();
 				for (z = 0; z < 9; z++) {
-					einheit[z] = new Feld(z, s);
-				} // Spalte in Array konvertieren
-				if (this.clusterInternEinschraenken(n, einheit) |
-						this.clusterExternEinschraenken(n, einheit)) {
+					einheit.add(new Feld(z, s));
+				} // Spalte in Menge konvertieren
+				if (this.clusterEinschraenken(n, einheit)) {
 					eingeschraenkt = true;
 				}
 			}
 			for (h = 0; h < 3; h++) { // Für alle horizontalen Blockbereiche
 				for (v = 0; v < 3; v++) { // Für alle vertikalen Blöcke
-					int i = 0; // Index für das Array einheit
+					einheit = new HashSet<Feld>();
 					for (z = 3 * h; z < 3 * (h + 1); z++) { // Für alle Zeilen des Blocks
 						for (s = 3 * v; s < 3 * (v + 1); s++) { // Für alle Spalten in der Zeile
-							einheit[i] = new Feld(z, s);
-							i++;
+							einheit.add(new Feld(z, s));
 						}
-					} // Block in Array konvertieren
-					if (this.clusterInternEinschraenken(n, einheit) |
-							this.clusterExternEinschraenken(n, einheit)) {
+					} // Block in Menge konvertieren
+					if (this.clusterEinschraenken(n, einheit)) {
 						eingeschraenkt = true;
 					}
 				}
 			}
 		}
 		return eingeschraenkt;
+	}
+	
+	/**
+	 * Sucht Cluster der Größe n in einer Einheit und schränkt ggf. die möglichen 
+	 * Werte ein.
+	 * 
+	 * @param n Größe des Clusters
+	 * @param einheit Menge von Feldern, die eine Einheit bilden (Zeile, Spalte oder Block)
+	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
+	 */
+	private boolean clusterEinschraenken(int n, Set<Feld> einheit) {
+		boolean eingeschraenkt = false;
+		// Nur Felder betrachten, die frei sind und deren Wert noch nicht eindeutig bestimmt ist
+		Set<Feld> freieFelder = new HashSet<Feld>();
+		Iterator<Feld> iterator = einheit.iterator();
+		while (iterator.hasNext()) {
+			Feld f = iterator.next();
+			int zeile = f.zeile;
+			int spalte = f.spalte;
+			if (this.moeglicheWerte[zeile][spalte].size() >= 2) {
+				freieFelder.add(f);
+			}
+		}
+		if (freieFelder.size() >= n) {
+			// Die Menge muss groß genug sein, um ein Cluster der Größe n bilden zu können
+			// Alle Teilmengen der Größe n bestimmen und über diese Teilmengen iterieren
+		}
+		return eingeschraenkt;
+	}
+	
+	/**
+	 * Generische Methode, die für eine Menge des Eintragstyps T alle Teilmengen
+	 * der Größe n liefert
+	 * 
+	 * @param <T> generischer Parameter für den Eintragstyp
+	 * @param n Größe der Teilmengen
+	 * @param menge Menge von T-Objekten mit mindestens n Elementen
+	 * @return
+	 */
+	private <T> Set<Set<T>> teilmengen(int n, Set<T> menge) {
+		Set<Set<T>> teilmengen = new HashSet<Set<T>>();
+		if (n == 0) { // Die leere Menge ist die einzige Teilmenge
+			teilmengen.add(new HashSet<T>());
+		} else if (menge.size() == n) { // Die gesamte Menge ist die einzige Teilmenge
+			teilmengen.add(menge);
+		} else { // 0 < n < menge.size()
+			Iterator<T> iterator = menge.iterator();
+			T e = iterator.next(); // Liefert das erste Element 
+			Set<T> neueMenge = new HashSet<T>();
+			// Die neue Menge für die rekursiven Aufrufe enthält alle Elemente außer dem ersten
+			while (iterator.hasNext()) {
+				neueMenge.add(iterator.next());
+			}
+			// Zunächst die Teilmengen berechnen, die das erste Element nicht enthalten
+			teilmengen = teilmengen(n, neueMenge);
+			// Nun die Teilmengen berechnen, die das erste Element enthalten.
+			Set<Set<T>> teilmengenMitE = teilmengen(n - 1, neueMenge);
+			Iterator<Set<T>> teilmengenIterator = teilmengenMitE.iterator();
+			while (teilmengenIterator.hasNext()) { // Zu jeder Teilmenge das erste Element hinzufügen
+				Set<T> teilmenge = teilmengenIterator.next();
+				teilmenge.add(e);
+				teilmengen.add(teilmenge); // Teilmenge zur Antwortmenge hinzufügen
+			}
+			
+		}
+		return teilmengen;
 	}
 	
 	
