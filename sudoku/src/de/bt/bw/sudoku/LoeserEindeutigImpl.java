@@ -409,18 +409,38 @@ public class LoeserEindeutigImpl implements Loeser {
 		boolean eingeschraenkt = false;
 		// Nur Felder betrachten, die frei sind und deren Wert noch nicht eindeutig bestimmt ist
 		Set<Feld> freieFelder = new HashSet<Feld>();
-		Iterator<Feld> iterator = einheit.iterator();
-		while (iterator.hasNext()) {
-			Feld f = iterator.next();
-			int zeile = f.zeile;
-			int spalte = f.spalte;
+		Iterator<Feld> feldIterator = einheit.iterator();
+		while (feldIterator.hasNext()) {
+			Feld feld = feldIterator.next();
+			int zeile = feld.zeile;
+			int spalte = feld.spalte;
 			if (this.moeglicheWerte[zeile][spalte].size() >= 2) {
-				freieFelder.add(f);
+				freieFelder.add(feld);
 			}
 		}
 		if (freieFelder.size() >= n) {
 			// Die Menge muss groß genug sein, um ein Cluster der Größe n bilden zu können
 			// Alle Teilmengen der Größe n bestimmen und über diese Teilmengen iterieren
+			Set<Set<Feld>> kandidaten = this.teilmengen(n, freieFelder);
+			Iterator<Set<Feld>> kandidatenIterator = kandidaten.iterator();
+			while (kandidatenIterator.hasNext()) {
+				Set<Feld> kandidat = kandidatenIterator.next(); // Wähle Clusterkandidaten aus
+				// Berechne Komplement
+				Set<Feld> komplement = new HashSet<Feld>();
+				Iterator<Feld> freieFelderIterator = freieFelder.iterator();
+				while(freieFelderIterator.hasNext()) {
+					Feld freiesFeld = freieFelderIterator.next();
+					if (!kandidat.contains(freiesFeld)) {
+						komplement.add(freiesFeld);
+					}
+				}
+				// Falls der Kandidat ein Cluster ist, ggf. Werte einschränken
+				if (this.clusterInternEinschraenken(kandidat, komplement) | 
+						this.clusterExternEinschraenken(kandidat, komplement)) {
+					// Nicht striktes Oder verwenden, damit beides ausgeführt wird
+					eingeschraenkt = true;
+				}
+			}			
 		}
 		return eingeschraenkt;
 	}
@@ -462,37 +482,67 @@ public class LoeserEindeutigImpl implements Loeser {
 		}
 		return teilmengen;
 	}
-	
-	
+		
 	/**
-	 * Behandelt interne Cluster der Größe innerhalb einer Einheit.
+	 * Behandelt einen Kandidaten für ein internes Cluster.<br>
 	 * Eine Menge von Feldern innerhalb einer Einheit bildet ein internes Cluster der
-	 * Größe, falls auf ihnen insgesamt genau n Werte möglich sind, die auf keinem
+	 * Größe n, falls auf ihnen insgesamt genau n Werte möglich sind, die auf keinem
 	 * anderen Feld der Einheit möglich sind. In diesem Fall werden alle anderen
-	 * Werte innerhalb des Clusters ausgeschlossen.
+	 * Werte innerhalb des Clusters ausgeschlossen.<br>
+	 * Der Methode werden der Clusterkandidat und sein Komplement innerhalb einer
+	 * Einheit übergeben. Kandidat und Komplement bilden eine Partition einer Einheit.
 	 * 
-	 * @param n Größe der Cluster
-	 * @param einheit Array von Feldern, die eine Einheit bilden
+	 * @param kandidat der Clusterkandidat
+	 * @param komplement das Komplement (die restlichen freien Felder) der Einheit
 	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
 	 */
-	private boolean clusterInternEinschraenken(int n, Feld[] einheit) {
+	private boolean clusterInternEinschraenken(Set<Feld> kandidat, Set<Feld> komplement) {
 		return false;
 	}
 	
 	/**
-	 * Behandelt externe Cluster der Größe innerhalb einer Einheit.
+	 * Behandelt einen Kandidaten für ein externes Cluster.<br>
 	 * Eine Menge von Feldern innerhalb einer Einheit bildet ein externes Cluster der
 	 * Größe n, falls auf ihnen insgesamt genau n Werte möglich sind. In diesem Fall
-	 * werden diese Werte auf allen anderen Feldern der Einheit ausgeschlossen.
+	 * werden diese Werte auf allen anderen Feldern der Einheit ausgeschlossen.<br>
+	 * Der Methode werden der Clusterkandidat und sein Komplement innerhalb einer
+	 * Einheit übergeben. Kandidat und Komplement bilden eine Partition einer Einheit.
 	 * 
-	 * @param n Größe der Cluster
-	 * @param einheit Array von Feldern, die eine Einheit bilden
+	 * @param kandidat der Clusterkandidat
+	 * @param komplement das Komplement (die restlichen freien Felder) der Einheit
 	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
 	 */
-	private boolean clusterExternEinschraenken(int n, Feld[] einheit) {
-		return false;
+	private boolean clusterExternEinschraenken(Set<Feld> kandidat, Set<Feld> komplement) {
+		boolean eingeschraenkt = false;
+		int n = kandidat.size();
+		// Alle Werte auf den Kandidatenfeldern ermitteln
+		Set<Integer> alleWerte = new HashSet<Integer>();
+		Iterator<Feld> feldIterator = kandidat.iterator();
+		while (feldIterator.hasNext()) {
+			Feld feld = feldIterator.next();
+			Set<Integer> feldWerte = this.moeglicheWerte[feld.zeile][feld.spalte];
+			Iterator<Integer> wertIterator = feldWerte.iterator();
+			while (wertIterator.hasNext()) {
+				Integer wert = wertIterator.next();
+				alleWerte.add(wert);
+			}
+		}
+		if (alleWerte.size() == n) { // Kandidat ist ein externes Cluster
+			// Die Werte des Clusters aus dem Komplement entfernen
+			Iterator<Integer> alleWerteIterator = alleWerte.iterator();
+			while (alleWerteIterator.hasNext()) {
+				Integer zuEliminierenderWert = alleWerteIterator.next();
+				Iterator<Feld> komplementIterator = komplement.iterator();
+				while (komplementIterator.hasNext()) {
+					Feld komplementFeld = komplementIterator.next();
+					if (this.moeglicheWerte[komplementFeld.zeile][komplementFeld.spalte].remove(zuEliminierenderWert)) {
+						eingeschraenkt = true;
+					}
+				}
+			}
+		}
+		return eingeschraenkt;
 	}
-
 	
 	/**
 	 * Zunächst wird die Lösung mit dem Rätsel initialisiert. Dann
