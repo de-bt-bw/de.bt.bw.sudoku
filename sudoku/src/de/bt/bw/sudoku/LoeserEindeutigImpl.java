@@ -198,54 +198,62 @@ public class LoeserEindeutigImpl implements Loeser {
 	 * @return true falls mindestens ein Wert gesetzt wurde
 	 */
 	private boolean werteSetzen() {
-		int schleifenZaehler = 0; // Zählt die Durchläufe der do-Schleife
-		boolean wertInSchleifeGesetzt; // Wurde im aktuellen Durchlauf der do-Schleife mindestens ein Wert gesetzt?
+		boolean wertGesetzt = false;
+		boolean erfolgInIteration = false;
+		// Fixpunktiteration des Setzens
 		do {
-			schleifenZaehler++;
-			wertInSchleifeGesetzt = false;
-			for (int z = 0; z < 9; z++) {
-				for (int s = 0; s < 9; s++) {
-					if (!this.loesung.belegt(z, s)) { // Nichts tun, wenn das Feld schon belegt ist
-						int wert = 0; // Der ggf. zu setzende Wert
-						Iterator<Integer> iterator = this.moeglicheWerte[z][s].iterator(); // Mindestens ein Wert möglich
-						if (this.eindeutig(z, s)) { // Nimm den Wert, wenn er eindeutig ist
-							wert = iterator.next();
+			for (int zeile = 0; zeile < 9; zeile++) {
+				for (int spalte = 0; spalte < 9; spalte++) {
+					if (!this.loesung.belegt(zeile, spalte)) { // Nichts tun, wenn das Feld schon belegt ist
+						int zuSetzenderWert = 0; // Der ggf. zu setzende Wert
+						Iterator<Integer> iterator = this.moeglicheWerte[zeile][spalte].iterator(); // Mindestens ein Wert möglich
+						if (this.eindeutig(zeile, spalte)) { // Nimm den Wert, wenn er eindeutig ist
+							zuSetzenderWert = iterator.next();
 						} else {
-							int w; // Variable für die zu betrachtenden Werte
 							while (iterator.hasNext()) {
-								w = iterator.next();
-								if (this.eindeutigInZeile(z, w) ||
-										this.eindeutigInSpalte(s, w) ||
-										this.eindeutigInBlock(z, s, w)) {
-									wert = w; // Wert wurde gefunden
+								int wert = iterator.next();
+								if (this.eindeutigInZeile(zeile, wert) ||
+										this.eindeutigInSpalte(spalte, wert) ||
+										this.eindeutigInBlock(zeile, spalte, wert)) {
+									zuSetzenderWert = wert; // Wert wurde gefunden
 									break; // Suchschleife abbrechen
 								}
 							}
 						}
-						if (wert != 0) { // Suche nach einem eindeutigen Wert erfolgreich
-							this.setze(z, s, wert);
-							wertInSchleifeGesetzt = true;
+						if (zuSetzenderWert != 0) { // Suche nach einem eindeutigen Wert erfolgreich
+							this.setze(zeile, spalte, zuSetzenderWert);
+							wertGesetzt = true;
+							erfolgInIteration = true;
 						}
 					}
 				}
 			}
-		} while (wertInSchleifeGesetzt); // Terminiert, sobald in einem Durchlauf kein Wert mehr gesetzt werden konnte
-		return schleifenZaehler > 1; // Mindestens 1 erfolgreicher Schleifendurchlauf
+		} while (erfolgInIteration); // Terminiert, sobald in einem Durchlauf kein Wert mehr gesetzt werden konnte
+		return wertGesetzt; // Mindestens 1 erfolgreicher Schleifendurchlauf
 	}
 	
 	/**
 	 * Es werden Werte zusätzlich eingeschränkt (d.h. zusätzlich zu den 
-	 * Einschränkungen, die direkt aus den Spielregeln folgen). Diese
-	 * Einschränkungen sind notwendig, wenn die Spielregeln keine
+	 * Einschränkungen, die direkt aus den Spielregeln folgen), solange dies möglich ist.<br>
+	 * Die Einschränkungen sind notwendig, wenn die Spielregeln keine
 	 * eindeutige Fortsetzung erlauben. Dazu wird
 	 * die Matrix moeglicheWerte benutzt und eingeschränkt.
 	 * Zum Einschränken werden Regeln benutzt, die unvollständige
 	 * Informationen auswerten.
 	 * 
-	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
+	 * @return true falls mindestens eine Wertemenge auf einem Feld eingeschränkt wurde
 	 */
 	private boolean werteEinschraenken() {
-		return this.zeilenSpaltenEinschraenken();
+		boolean wertEingeschraenkt = false;
+		boolean erfolgInIteration; 
+		// Fixpunktiteration der Einschränkungen
+		do {
+			erfolgInIteration = this.zeilenSpaltenEinschraenken() | this.clusterEinschraenken();
+			if (erfolgInIteration) {
+				wertEingeschraenkt = true;
+			}
+		} while (erfolgInIteration);
+		return wertEingeschraenkt;
 	}
 	
 	/**
@@ -354,7 +362,7 @@ public class LoeserEindeutigImpl implements Loeser {
 	 * Für die Einschränkungen werden nur Cluster der Größen 2 und 3 betrachtet,
 	 * weil zum Lösen der Rätsel die Behandlung größerer Cluster nie erforderlich war.
 	 * 
-	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
+	 * @return true falls mindestens eine Wertemenge auf einem Feld eingeschränkt wurde
 	 */
 	private boolean clusterEinschraenken() {
 		Set<Feld> einheit;
@@ -401,20 +409,18 @@ public class LoeserEindeutigImpl implements Loeser {
 	 * Sucht Cluster der Größe n in einer Einheit und schränkt ggf. die möglichen 
 	 * Werte ein.
 	 * 
-	 * @param n Größe des Clusters
+	 * @param n Größe des Clusters (2 <= n <= 9)
 	 * @param einheit Menge von Feldern, die eine Einheit bilden (Zeile, Spalte oder Block)
-	 * @return true falls mindestens eine Wertemenge eingeschränkt wurde
+	 * @return true falls mindestens eine Wertemenge auf einem Feld der Einheit eingeschränkt wurde
 	 */
 	private boolean clusterEinschraenken(int n, Set<Feld> einheit) {
 		boolean eingeschraenkt = false;
-		// Nur Felder betrachten, die frei sind und deren Wert noch nicht eindeutig bestimmt ist
+		// Nur Felder betrachten, die frei sind
 		Set<Feld> freieFelder = new HashSet<Feld>();
 		Iterator<Feld> feldIterator = einheit.iterator();
 		while (feldIterator.hasNext()) {
 			Feld feld = feldIterator.next();
-			int zeile = feld.zeile;
-			int spalte = feld.spalte;
-			if (this.moeglicheWerte[zeile][spalte].size() >= 2) {
+			if (!this.loesung.belegt(feld.zeile, feld.spalte)) {
 				freieFelder.add(feld);
 			}
 		}
@@ -425,7 +431,7 @@ public class LoeserEindeutigImpl implements Loeser {
 			Iterator<Set<Feld>> kandidatenIterator = kandidaten.iterator();
 			while (kandidatenIterator.hasNext()) {
 				Set<Feld> kandidat = kandidatenIterator.next(); // Wähle Clusterkandidaten aus
-				// Berechne Komplement
+				// Berechne Komplement (freie Felder, die nicht zum Clusterkandidaten gehören)
 				Set<Feld> komplement = new HashSet<Feld>();
 				Iterator<Feld> freieFelderIterator = freieFelder.iterator();
 				while(freieFelderIterator.hasNext()) {
@@ -450,7 +456,7 @@ public class LoeserEindeutigImpl implements Loeser {
 	 * der Größe n liefert
 	 * 
 	 * @param <T> generischer Parameter für den Eintragstyp
-	 * @param n Größe der Teilmengen
+	 * @param n Größe der Teilmengen (0 <= n <= menge.size())
 	 * @param menge Menge von T-Objekten mit mindestens n Elementen
 	 * @return
 	 */
@@ -462,7 +468,7 @@ public class LoeserEindeutigImpl implements Loeser {
 			teilmengen.add(menge);
 		} else { // 0 < n < menge.size()
 			Iterator<T> iterator = menge.iterator();
-			T e = iterator.next(); // Liefert das erste Element 
+			T element = iterator.next(); // Liefert das erste Element 
 			Set<T> neueMenge = new HashSet<T>();
 			// Die neue Menge für die rekursiven Aufrufe enthält alle Elemente außer dem ersten
 			while (iterator.hasNext()) {
@@ -470,12 +476,12 @@ public class LoeserEindeutigImpl implements Loeser {
 			}
 			// Zunächst die Teilmengen berechnen, die das erste Element nicht enthalten
 			teilmengen = teilmengen(n, neueMenge);
-			// Nun die Teilmengen berechnen, die das erste Element enthalten.
-			Set<Set<T>> teilmengenMitE = teilmengen(n - 1, neueMenge);
-			Iterator<Set<T>> teilmengenIterator = teilmengenMitE.iterator();
+			// Nun die Teilmengen berechnen, die das erste Element enthalten
+			Set<Set<T>> teilmengenMitELement = teilmengen(n - 1, neueMenge); // Zunächst ohne erstes Element
+			Iterator<Set<T>> teilmengenIterator = teilmengenMitELement.iterator();
 			while (teilmengenIterator.hasNext()) { // Zu jeder Teilmenge das erste Element hinzufügen
 				Set<T> teilmenge = teilmengenIterator.next();
-				teilmenge.add(e);
+				teilmenge.add(element);
 				teilmengen.add(teilmenge); // Teilmenge zur Antwortmenge hinzufügen
 			}
 			
@@ -531,7 +537,7 @@ public class LoeserEindeutigImpl implements Loeser {
 	}
 	
 	/**
-	 * Berechnet die Vereinigungsmenge alle Werte, die auf den Feldern einer vorgegebenen
+	 * Berechnet die Vereinigungsmenge aller Werte, die auf den Feldern einer vorgegebenen
 	 * Menge möglich sind.
 	 * 
 	 * @param feldMenge die Menge der Felder
@@ -600,18 +606,9 @@ public class LoeserEindeutigImpl implements Loeser {
 			return null;
 		this.init(raetsel);
 		this.werteSetzen(); // Terminiert, wenn keine Werte mehr gesetzt werden können
-		boolean erfolg = true;
-		while (erfolg && !helfer.loesungVollstaendig(this.loesung)) { 
-			int zaehler = 0;
-			do {
-				erfolg = this.werteEinschraenken();
-				if (erfolg) {
-					zaehler++;
-				}
-			} while (erfolg); // Einschränkung von Werten so lange wie möglich iterieren
-			if (zaehler > 0) { // Mindestens eine Einschränkung
-				erfolg = this.werteSetzen(); // Falls kein Wert gesetzt wurde, wird die Schleife terminieren
-			}
+		while (!helfer.loesungVollstaendig(this.loesung) && this.werteEinschraenken() && this.werteSetzen()) {
+			// Solange die Lösung unvollständig ist, Werte eingeschränkt werden können und
+			// anschließend Werte gesetzt werden können, wird die Schleife ausgeführt.
 		}
 		if (helfer.loesungVollstaendig(this.loesung)) {
 			return this.loesung;
