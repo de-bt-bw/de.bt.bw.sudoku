@@ -199,9 +199,10 @@ public class LoeserEindeutigImpl implements Loeser {
 	 */
 	private boolean werteSetzen() {
 		boolean wertGesetzt = false;
-		boolean erfolgInIteration = false;
+		boolean erfolgInIteration;
 		// Fixpunktiteration des Setzens
 		do {
+			erfolgInIteration = false;
 			for (int zeile = 0; zeile < 9; zeile++) {
 				for (int spalte = 0; spalte < 9; spalte++) {
 					if (!this.loesung.belegt(zeile, spalte)) { // Nichts tun, wenn das Feld schon belegt ist
@@ -248,9 +249,10 @@ public class LoeserEindeutigImpl implements Loeser {
 		boolean erfolgInIteration; 
 		// Fixpunktiteration der Einschränkungen
 		do {
-			erfolgInIteration = this.zeilenSpaltenEinschraenken() | this.clusterEinschraenken();
+			erfolgInIteration = this.zeilenSpaltenEinschraenken(); // Vorübergehend zu Testzwecken
+			//erfolgInIteration = this.zeilenSpaltenEinschraenken() | this.clusterEinschraenken();
 			if (erfolgInIteration) {
-				wertEingeschraenkt = true;
+				wertEingeschraenkt = true; 
 			}
 		} while (erfolgInIteration);
 		return wertEingeschraenkt;
@@ -508,7 +510,7 @@ public class LoeserEindeutigImpl implements Loeser {
 		// Alle Werte auf den Kandidaten- und Komplementfeldern ermitteln
 		Set<Integer> alleKandidatenWerte = this.alleWerte(kandidat);
 		Set<Integer> alleKomplementWerte = this.alleWerte(komplement);
-		// Nur im Clusterkandidaten vorkommenden Werte ermitteln
+		// Nur im Clusterkandidaten vorkommende Werte ermitteln
 		Set<Integer> werteNurImKandidaten = new HashSet<Integer>();
 		Iterator<Integer> kandidatenWertIterator = alleKandidatenWerte.iterator();
 		while (kandidatenWertIterator.hasNext()) {
