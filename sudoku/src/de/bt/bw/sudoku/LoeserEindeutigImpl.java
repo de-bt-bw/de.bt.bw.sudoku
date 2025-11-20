@@ -230,7 +230,7 @@ public class LoeserEindeutigImpl implements Loeser {
 				}
 			}
 		} while (erfolgInIteration); // Terminiert, sobald in einem Durchlauf kein Wert mehr gesetzt werden konnte
-		return wertGesetzt; // Mindestens 1 erfolgreicher Schleifendurchlauf
+		return wertGesetzt; // Mindestens ein Wert gesetzt
 	}
 	
 	/**
@@ -245,16 +245,12 @@ public class LoeserEindeutigImpl implements Loeser {
 	 * @return true falls mindestens eine Wertemenge auf einem Feld eingeschränkt wurde
 	 */
 	private boolean werteEinschraenken() {
-		boolean wertEingeschraenkt = false;
-		boolean erfolgInIteration; 
-		// Fixpunktiteration der Einschränkungen
-		do {
-			erfolgInIteration = this.zeilenSpaltenEinschraenken(); // Vorübergehend zu Testzwecken
-			//erfolgInIteration = this.zeilenSpaltenEinschraenken() | this.clusterEinschraenken();
-			if (erfolgInIteration) {
-				wertEingeschraenkt = true; 
+		boolean wertEingeschraenkt = this.zeilenSpaltenEinschraenken() || this.clusterEinschraenken();
+		if (wertEingeschraenkt) {
+			while (this.zeilenSpaltenEinschraenken() || this.clusterEinschraenken()) {
+				// Fixpunktiteration
 			}
-		} while (erfolgInIteration);
+		}
 		return wertEingeschraenkt;
 	}
 	
@@ -265,7 +261,7 @@ public class LoeserEindeutigImpl implements Loeser {
 	 * @return true falls mindestens eine Zeilen- oder Spalteneinschränkung erfolgt ist
 	 */
 	private boolean zeilenSpaltenEinschraenken() {
-		return this.zeilenEinschraenken() | this.spaltenEinschraenken(); // Striktes Oder verwenden!
+		return this.zeilenEinschraenken() || this.spaltenEinschraenken(); 
 	}
 	
 	/**
@@ -443,9 +439,8 @@ public class LoeserEindeutigImpl implements Loeser {
 					}
 				}
 				// Falls der Kandidat ein Cluster ist, ggf. Werte einschränken
-				if (this.clusterInternEinschraenken(kandidat, komplement) | 
+				if (this.clusterInternEinschraenken(kandidat, komplement) || 
 						this.clusterExternEinschraenken(kandidat, komplement)) {
-					// Nicht striktes Oder verwenden, damit beides ausgeführt wird
 					eingeschraenkt = true;
 				}
 			}			
@@ -525,14 +520,20 @@ public class LoeserEindeutigImpl implements Loeser {
 			while (kandidatenIterator.hasNext()) {
 				Feld kandidatenFeld = kandidatenIterator.next();
 				Set<Integer> feldWerte = this.moeglicheWerte[kandidatenFeld.zeile][kandidatenFeld.spalte];
+				Set<Integer> eingeschraenkteFeldWerte = new HashSet<Integer>();
+				// Menge neu aufbauen, um Iterator auf zu verändernder Menge zu vermeiden
 				Iterator<Integer> feldWertIterator = feldWerte.iterator();
 				while(feldWertIterator.hasNext()) {
 					Integer wert = feldWertIterator.next();
-					if (!werteNurImKandidaten.contains(wert)) { // Wert eliminieren
-						this.moeglicheWerte[kandidatenFeld.zeile][kandidatenFeld.spalte].remove(wert); // Immer erfolgreich
+					if (werteNurImKandidaten.contains(wert)) {
+						eingeschraenkteFeldWerte.add(wert);
+					} else {
+						// Wert wird nicht mehr berücksichtigt
 						eingeschraenkt = true;
 					}
 				}
+				// Mögliche Werte neu setzen
+				this.moeglicheWerte[kandidatenFeld.zeile][kandidatenFeld.spalte] = eingeschraenkteFeldWerte;
 			}
 		}
 		return eingeschraenkt;
@@ -585,9 +586,22 @@ public class LoeserEindeutigImpl implements Loeser {
 				Iterator<Feld> komplementIterator = komplement.iterator();
 				while (komplementIterator.hasNext()) {
 					Feld komplementFeld = komplementIterator.next();
-					if (this.moeglicheWerte[komplementFeld.zeile][komplementFeld.spalte].remove(zuEliminierenderWert)) {
-						eingeschraenkt = true;
+					Set<Integer> feldWerte = this.moeglicheWerte[komplementFeld.zeile][komplementFeld.spalte];
+					Set<Integer> eingeschraenkteFeldWerte = new HashSet<Integer>();
+					// Menge neu aufbauen, um Iterator auf zu verändernder Menge zu vermeiden
+					Iterator<Integer> feldWertIterator = feldWerte.iterator();
+					while(feldWertIterator.hasNext()) {
+						Integer wert = feldWertIterator.next();
+						if (alleWerte.contains(wert)) {
+							// Wert wird nicht mehr berücksichtigt
+							eingeschraenkt = true;							
+						} else {
+							eingeschraenkteFeldWerte.add(wert);
+						}
 					}
+					// Mögliche Werte neu setzen
+					this.moeglicheWerte[komplementFeld.zeile][komplementFeld.spalte] = eingeschraenkteFeldWerte;
+
 				}
 			}
 		}
