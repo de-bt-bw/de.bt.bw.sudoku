@@ -358,7 +358,9 @@ public class LoeserEindeutigImpl implements Loeser {
 	 * in den übrigen Feldern der Einheit). Die Werte werden durch Propagationsregeln
 	 * eingeschränkt.<br> 
 	 * Für die Einschränkungen werden nur Cluster der Größen 2 und 3 betrachtet,
-	 * weil zum Lösen der Rätsel die Behandlung größerer Cluster nie erforderlich war.
+	 * weil zum Lösen der Rätsel die Behandlung größerer Cluster nie erforderlich war.<br>
+	 * Für jede Clustergröße wird ein einziger Durchlauf über alle Zeilen, Spalten
+	 * und Blöcke durchgeführt.
 	 * 
 	 * @return true falls mindestens eine Wertemenge auf einem Feld eingeschränkt wurde
 	 */
@@ -480,8 +482,7 @@ public class LoeserEindeutigImpl implements Loeser {
 				Set<T> teilmenge = teilmengenIterator.next();
 				teilmenge.add(element);
 				teilmengen.add(teilmenge); // Teilmenge zur Antwortmenge hinzufügen
-			}
-			
+			}			
 		}
 		return teilmengen;
 	}
@@ -580,29 +581,24 @@ public class LoeserEindeutigImpl implements Loeser {
 		Set<Integer> alleWerte = this.alleWerte(kandidat);
 		if (alleWerte.size() == n) { // Kandidat ist ein externes Cluster
 			// Die Werte des Clusters aus dem Komplement entfernen
-			Iterator<Integer> alleWerteIterator = alleWerte.iterator();
-			while (alleWerteIterator.hasNext()) {
-				Integer zuEliminierenderWert = alleWerteIterator.next();
-				Iterator<Feld> komplementIterator = komplement.iterator();
-				while (komplementIterator.hasNext()) {
-					Feld komplementFeld = komplementIterator.next();
-					Set<Integer> feldWerte = this.moeglicheWerte[komplementFeld.zeile][komplementFeld.spalte];
-					Set<Integer> eingeschraenkteFeldWerte = new HashSet<Integer>();
-					// Menge neu aufbauen, um Iterator auf zu verändernder Menge zu vermeiden
-					Iterator<Integer> feldWertIterator = feldWerte.iterator();
-					while(feldWertIterator.hasNext()) {
-						Integer wert = feldWertIterator.next();
-						if (alleWerte.contains(wert)) {
-							// Wert wird nicht mehr berücksichtigt
-							eingeschraenkt = true;							
-						} else {
-							eingeschraenkteFeldWerte.add(wert);
-						}
+			Iterator<Feld> komplementIterator = komplement.iterator();
+			while (komplementIterator.hasNext()) {
+				Feld komplementFeld = komplementIterator.next();
+				Set<Integer> feldWerte = this.moeglicheWerte[komplementFeld.zeile][komplementFeld.spalte];
+				Set<Integer> eingeschraenkteFeldWerte = new HashSet<Integer>();
+				// Menge neu aufbauen, um Iterator auf zu verändernder Menge zu vermeiden
+				Iterator<Integer> feldWertIterator = feldWerte.iterator();
+				while(feldWertIterator.hasNext()) {
+					Integer wert = feldWertIterator.next();
+					if (alleWerte.contains(wert)) {
+						// Wert wird nicht mehr berücksichtigt
+						eingeschraenkt = true;							
+					} else {
+						eingeschraenkteFeldWerte.add(wert);
 					}
-					// Mögliche Werte neu setzen
-					this.moeglicheWerte[komplementFeld.zeile][komplementFeld.spalte] = eingeschraenkteFeldWerte;
-
 				}
+				// Mögliche Werte neu setzen
+				this.moeglicheWerte[komplementFeld.zeile][komplementFeld.spalte] = eingeschraenkteFeldWerte;
 			}
 		}
 		return eingeschraenkt;

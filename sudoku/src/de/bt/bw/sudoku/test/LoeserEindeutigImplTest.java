@@ -57,7 +57,8 @@ class LoeserEindeutigImplTest {
 	
 	@Test
 	void testLoeseRaetsel_Golden_316() {
-		assertTrue(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_316) == null); // Vom Basislöser nicht lösbar
+		// assertTrue(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_316) == null); // Vom Basislöser nicht lösbar
+		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_316)));
 	}
 
 
