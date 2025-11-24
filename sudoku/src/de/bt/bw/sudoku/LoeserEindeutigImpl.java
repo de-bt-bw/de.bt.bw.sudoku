@@ -176,7 +176,7 @@ public class LoeserEindeutigImpl implements Loeser {
 		int minSpalte = spaltenNr - spaltenNr % 3;
 		for (int z = minZeile; z < minZeile + 3; z++) {
 			for (int s = minSpalte; s < minSpalte + 3; s++) {
-				if (this.moeglicheWerte[zeilenNr][spaltenNr].contains(wert)) {
+				if (this.moeglicheWerte[z][s].contains(wert)) {
 					haeufigkeit++;
 					if (haeufigkeit > 1) {
 						break;
