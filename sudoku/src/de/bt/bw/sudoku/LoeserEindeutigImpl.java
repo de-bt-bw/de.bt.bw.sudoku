@@ -256,7 +256,7 @@ public class LoeserEindeutigImpl implements Loeser {
 	
 	/**
 	 * Prüft in der Matrix möglicher Werte für jeden Block, ob die Zeile bzw. Spalte für einen Wert eindeutig bestimmt ist,
-	 * und entfernt ggf. diesen Wert aus den anderen Zeilen bzw. Spalten dieses Blocks.
+	 * und entfernt ggf. diesen Wert im jeweiligen Kontext.
 	 * 
 	 * @return true falls mindestens eine Zeilen- oder Spalteneinschränkung erfolgt ist
 	 */
@@ -265,13 +265,18 @@ public class LoeserEindeutigImpl implements Loeser {
 	}
 	
 	/**
-	 * Prüft Zeileneinschränkungen und führt sie ggf. aus
+	 * Prüft Zeileneinschränkungen und führt sie ggf. aus, indem die Matrix moeglicheWerte eingeschränkt wird.<br>
+	 * Dabei sind zwei Fälle zu unterscheiden:<br>
+	 * 1. Wert w ist in Zeile z in Block b möglich, aber in den anderen Blöcken nicht möglich. Dann muss w in
+	 * Block b in Zeile z stehen. w wird dann aus den anderen Zeilen des gleichen Blocks entfernt.<br>
+	 * 2. Wert w ist in Block b nur in Zeile z möglich. Dann muss w in Block b in Zeile z stehen. w wird
+	 * dann in der gleichen Zeile aus den anderen Blöcken entfernt.
 	 * 
 	 * @return true falls mindestens eine Zeileneinschränkung in einem Feld der Matrix moeglicheWerte erfolgt ist
 	 */
 	private boolean zeilenEinschraenken() {
 		boolean eingeschraenkt = false;
-		int w, h, z, az, b, s; // Laufvariablen
+		int w, h, z, az, b, ab, s; // Laufvariablen
 		for (w = 1; w < 10; w++) { // Für alle Werte
 			for (h = 0; h < 3; h++) { // Für alle horizontalen Blockbereiche
 				boolean[][] moeglich = new boolean[3][3]; // Zeilenindex: Zeilen z, Spaltenindex: Blöcke b
@@ -285,18 +290,35 @@ public class LoeserEindeutigImpl implements Loeser {
 						}
 					}
 				}
-				// Zeileneinschraenkungen durchführen
+				// Zeileneinschränkungen durchführen
 				for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
 					for (z = 0; z < 3; z++) { // Für alle Zeilen im Block
 						if (moeglich[z][b] && !moeglich[z][(b + 1) % 3] && !moeglich[z][(b + 2) % 3]) {
-							// Wert w muss in Block b in Zeile z stehen
-							// Andere Zeilen in Block b ausschließen
-							for (az = (z +1) % 3; az != z; az = (az + 1) % 3) { // Für die beiden anderen Zeilen
-								moeglich[az][b] = false; // Wert w in dieser Zeile nicht möglich
-								for (s = 0; s < 3; s++) { // Für alle Spalten in der Zeile az
-									if (this.moeglicheWerte[az + h*3][s + b*3].remove(w)) {
-										// Entfernung von w war erfolgreich
-										eingeschraenkt = true;
+							// Fall 1: Wert w muss in Block b in Zeile z stehen, da w in den anderen Blöcken in z nicht möglich ist
+							// Wert w in den anderen Zeilen von Block b ausschließen
+							for (az = (z + 1) % 3; az != z; az = (az + 1) % 3) { // Für die beiden anderen Zeilen
+								if (moeglich[az][b]) { // Sonst ist nichts zu tun, da w in az nicht möglich
+									moeglich[az][b] = false; // Wert w in dieser Zeile nicht möglich
+									for (s = 0; s < 3; s++) { // Für alle Spalten in der Zeile az
+										if (this.moeglicheWerte[az + h*3][s + b*3].remove(w)) {
+											// Entfernung von w war erfolgreich
+											eingeschraenkt = true;
+										}
+									}
+								}								
+							}
+						}
+						if (moeglich[z][b] && !moeglich[(z +1)%3][b] && !moeglich[(z +2)%3][b]) {
+							// Fall 2: Wert w muss in Block b in Zeile z stehen, da w in den anderen Zeilen von Block b nicht möglich ist
+							// Wert w in den anderen Blöcken in Zeile z ausschließen
+							for (ab = (b + 1) % 3; ab != b; ab = (ab + 1) % 3) { // Für die beiden anderen Blöcke
+								if (moeglich[z][ab]) { // Sonst ist nichts zu tun, da w in ab in Zeile z nicht möglich
+									moeglich[z][ab] = false; // Wert w in diesem Block in Zeile z nicht möglich
+									for (s = 0; s < 3; s++) { // Für alle Spalten im Block ab
+										if (this.moeglicheWerte[z + h*3][s + ab*3].remove(w)) {
+											// Entfernung von w war erfolgreich
+											eingeschraenkt = true;
+										}
 									}
 								}
 							}
@@ -309,17 +331,23 @@ public class LoeserEindeutigImpl implements Loeser {
 	}
 	
 	/**
-	 * Prüft Spalteneinschränkungen und führt sie ggf. aus
+	 * Prüft Spalteneinschränkungen und führt sie ggf. aus, indem die Matrix moeglicheWerte eingeschränkt wird.<br>
+	 * Dabei sind zwei Fälle zu unterscheiden:<br>
+	 * 1. Wert w ist in Spalte s in Block b möglich, aber in den anderen Blöcken nicht möglich. Dann muss w in
+	 * Block b in Spalte s stehen. w wird dann aus den anderen Spalten des gleichen Blocks entfernt.<br>
+	 * 2. Wert w ist in Block b nur in Spalte s möglich. Dann muss w in Block b in Spalte s stehen. w wird
+	 * dann in der gleichen Spalte aus den anderen Blöcken entfernt.
+	 * 
 	 * 
 	 * @return true falls mindestens eine Spalteneinschraenkung erfolgt ist
 	 */
 	private boolean spaltenEinschraenken() {
 		boolean eingeschraenkt = false;
-		int w, v, s, as, b, z; // Laufvariablen
+		int w, v, s, as, b, ab, z; // Laufvariablen
 		for (w = 1; w < 10; w++) { // Für alle Werte
 			for (v = 0; v < 3; v++) { // Für alle vertikalen Blockbereiche
 				boolean[][] moeglich = new boolean[3][3]; // Zeilenindex: Blöcke b, Spaltenindex: Spalten s
-				// Mögliche Zeilen und Blöcke aus Matrix moeglicheWerte bestimmen
+				// Mögliche Blöcke und Spalten aus Matrix moeglicheWerte bestimmen
 				for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
 					for (s = 0; s < 3; s++) { // Für alle Spalten im Block
 						for (z = 0; z < 3; z++) { // Für alle Zeilen im Block
@@ -329,20 +357,39 @@ public class LoeserEindeutigImpl implements Loeser {
 						}
 					}
 				}
-				// Spalteneinschraenkungen durchführen
+				// Spalteneinschränkungen durchführen
 				for (b = 0; b < 3; b++) { // Für alle Blöcke des Blockbereichs
 					for (s = 0; s < 3; s++) { // Für alle Spalten im Block
 						if (moeglich[b][s] && !moeglich[(b + 1) % 3][s] && !moeglich[(b + 2) % 3][s]) {
-							// Wert w muss in Block b in Spalte s stehen
+							// Fall 1: Wert w muss in Block b in Spalte s stehen, da w in den anderen Blöcken in Spalte s nicht möglich ist
 							// Andere Spalten in Block b ausschließen
-							for (as = (s +1) % 3; as != s; as = (as + 1) % 3) { // Für die beiden anderen Spalten
-								moeglich[b][as] = false; // Wert w in dieser Spalte nicht möglich
-								for (z = 0; z < 3; z++) { // Für alle Zeilen im Block
-									if (this.moeglicheWerte[z + b*3][as + v*3].remove(w)) {
-										// Entfernung von w war erfolgreich
-										eingeschraenkt = true;
+							for (as = (s + 1) % 3; as != s; as = (as + 1) % 3) { // Für die beiden anderen Spalten
+								if (moeglich[b][as]) { // Sonst ist nichts zu tun
+									moeglich[b][as] = false; // Wert w in dieser Spalte nicht möglich
+									for (z = 0; z < 3; z++) { // Für alle Zeilen im Block
+										if (this.moeglicheWerte[z + b*3][as + v*3].remove(w)) {
+											// Entfernung von w war erfolgreich
+											eingeschraenkt = true;
+										}
 									}
 								}
+							}
+						}
+						if (moeglich[b][s] && !moeglich[b][(s + 1) % 3] && !moeglich[b][(s + 2) % 3]) {
+							// Fall 2: Wert w muss in Block b in Spalte s stehen, da w in anderen Spalten von b nicht möglich ist
+							// Wert w in den anderen Blöcken in Spalte s ausschließen
+							for (ab = (b + 1) % 3; ab != b; ab = (ab + 1) % 3) { // Für die beiden anderen Blöcke
+								if (moeglich[ab][s]) { // Sonst ist nichts zu tun, da w in ab in Spalte s nicht möglich
+									moeglich[ab][s] = false; // Wert w in diesem Block in Spalte s nicht möglich
+									for (z = 0; z < 3; z++) { // Für alle Zeilen im Block
+										if (this.moeglicheWerte[z + b*3][s + v*3].remove(w)) {
+											// Entfernung von w war erfolgreich
+											eingeschraenkt = true;
+										}
+									}
+
+								}
+								
 							}
 						}
 					}
