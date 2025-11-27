@@ -382,7 +382,7 @@ public class LoeserEindeutigImpl implements Loeser {
 								if (moeglich[ab][s]) { // Sonst ist nichts zu tun, da w in ab in Spalte s nicht möglich
 									moeglich[ab][s] = false; // Wert w in diesem Block in Spalte s nicht möglich
 									for (z = 0; z < 3; z++) { // Für alle Zeilen im Block
-										if (this.moeglicheWerte[z + b*3][s + v*3].remove(w)) {
+										if (this.moeglicheWerte[z + ab*3][s + v*3].remove(w)) {
 											// Entfernung von w war erfolgreich
 											eingeschraenkt = true;
 										}
@@ -436,7 +436,7 @@ public class LoeserEindeutigImpl implements Loeser {
 				}
 			}
 			for (h = 0; h < 3; h++) { // Für alle horizontalen Blockbereiche
-				for (v = 0; v < 3; v++) { // Für alle vertikalen Blöcke
+				for (v = 0; v < 3; v++) { // Für alle Blöcke
 					einheit = new HashSet<Feld>();
 					for (z = 3 * h; z < 3 * (h + 1); z++) { // Für alle Zeilen des Blocks
 						for (s = 3 * v; s < 3 * (v + 1); s++) { // Für alle Spalten in der Zeile
@@ -562,7 +562,7 @@ public class LoeserEindeutigImpl implements Loeser {
 				werteNurImKandidaten.add(wert);
 			}
 		}
-		if (werteNurImKandidaten.size() == n) { // Kandidat ist ein internes Cluster
+		if (werteNurImKandidaten.size() == n && alleKandidatenWerte.size() > n) { // Kandidat ist ein internes Cluster
 			// Innerhalb des Clusters alle Werte eliminieren, die auch im Komplement vorkommen
 			Iterator<Feld> kandidatenIterator = kandidat.iterator();
 			while (kandidatenIterator.hasNext()) {
@@ -581,7 +581,9 @@ public class LoeserEindeutigImpl implements Loeser {
 					}
 				}
 				// Mögliche Werte neu setzen
-				this.moeglicheWerte[kandidatenFeld.zeile][kandidatenFeld.spalte] = eingeschraenkteFeldWerte;
+				if (!feldWerte.equals(eingeschraenkteFeldWerte)) {
+					this.moeglicheWerte[kandidatenFeld.zeile][kandidatenFeld.spalte] = eingeschraenkteFeldWerte;
+				}
 			}
 		}
 		return eingeschraenkt;
@@ -644,8 +646,10 @@ public class LoeserEindeutigImpl implements Loeser {
 						eingeschraenkteFeldWerte.add(wert);
 					}
 				}
-				// Mögliche Werte neu setzen
-				this.moeglicheWerte[komplementFeld.zeile][komplementFeld.spalte] = eingeschraenkteFeldWerte;
+				// Mögliche Werte ggf. neu setzen
+				if (!feldWerte.equals(eingeschraenkteFeldWerte)) {
+					this.moeglicheWerte[komplementFeld.zeile][komplementFeld.spalte] = eingeschraenkteFeldWerte;
+				}				
 			}
 		}
 		return eingeschraenkt;

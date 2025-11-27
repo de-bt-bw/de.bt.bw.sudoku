@@ -3,7 +3,7 @@ LoeserKonsole startet das automatische Werkzeug (Konsole).
 
 Beim Testen oder Ausführen wird u.U. ein Fehler gemeldet. 
 Dann unter Project das Kommando BuildAutomatically
-deaktivieren, anschließend Clean und Build Project aktivieren. 
+deaktivieren, anschließend Clean und Build Project aktivieren.
 
 Alle Lösungen zu Rätseln aus Rätselbüchern sind eindeutig. Deshalb wird beim Testen
 lediglich überprüft, ob eine (vollständige) Lösung gefunden wurde. Es wird
