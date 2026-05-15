@@ -57,8 +57,11 @@ class LoeserTiefensucheImplTest {
 	void testLoeseRaetsel_Golden_316() {
 		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_316)));
 	}
-
-// Kein Testfall für leeres Rätsel, zu ineffizient
+	
+//	@Test
+//	void testLoeseRaetsel_Leer() {
+//		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Leer)));
+//	} // Kein Testfall für leeres Rätsel, zu ineffizient, kein Resultat nach ca. 1 Stunde Laufzeit
 
 
 }

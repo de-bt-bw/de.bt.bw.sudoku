@@ -24,7 +24,6 @@ class LoeserEindeutigImplTest {
 
 	@Test
 	void testLoeseRaetsel_FitImKopf() {
-		// assertTrue(loeserHelfer.loese(loeser, Testdaten.raetsel_FitImKopf) == null); // Vom Basislöser nicht lösbar
 		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_FitImKopf)));
 	}
 	
@@ -45,20 +44,23 @@ class LoeserEindeutigImplTest {
 	
 	@Test
 	void testLoeseRaetsel_Golden_309() {
-		// assertTrue(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_309) == null); // Vom Basislöser nicht lösbar
 		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_309)));
 	}
 	
 	@Test
 	void testLoeseRaetsel_Golden_311() {
-		// assertTrue(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_311) == null); // Vom Basislöser nicht lösbar
 		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_311)));
 	}
 	
 	@Test
 	void testLoeseRaetsel_Golden_316() {
-		// assertTrue(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_316) == null); // Vom Basislöser nicht lösbar
 		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Golden_316)));
+	}
+	
+	@Test
+	void testLoeseRaetsel_Leer() {
+		assertTrue(spielfeldHelfer.loesungVollstaendig(loeserHelfer.loese(loeser, Testdaten.raetsel_Leer)));
+		// Leeres Rätsel ist nicht eindeutig lösbar
 	}
 
 
