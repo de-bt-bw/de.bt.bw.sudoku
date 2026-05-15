@@ -21,8 +21,6 @@ import java.util.Set;
  * 
  */
 public class LoeserEindeutigImpl implements Loeser {
-	// In der ersten Version ist die Implementierung funktional äquivalent zur Basisimplementierung.
-	// Sie wird später um die zusätzlichen Regeln erweitert.
 	
 	/**
 	 * Verwaltet für jedes Feld die noch möglichen Werte. Die Menge ist leer, wenn das Feld bereits 
